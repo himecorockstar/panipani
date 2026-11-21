@@ -22,11 +22,13 @@
 .top:before{display:none}
 .cover-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:9px}
 .cover-controls button{min-height:38px;padding:5px 10px;border:1px solid #89a798;border-radius:999px;background:#eff7f2;color:#405b4d;font-size:12px;cursor:pointer}
+.overlay.parked{visibility:hidden;opacity:0;pointer-events:none}
+.overlay.game-view #sheetContent{height:100%;min-height:0}
 </style>
 </head>
 <body>
 <main class="app">
- <header class="top"><div class="brand"><div class="brand-copy"><h1 class="brand-name">パニックパニック</h1><p class="brand-en">Panic Panic</p><p class="nonmedical">（医療機器用品ではありません）</p><div class="cover-controls"><button id="helpAll" type="button">読んでね</button><button id="languageButton" type="button">言語</button><button id="stopEverything" type="button">全停止（60分後自動）</button></div></div></div></header>
+ <header class="top"><div class="brand"><div class="brand-copy"><h1 class="brand-name">パニックパニック</h1><p class="brand-en">Panic Panic</p><p class="nonmedical">（医療機器用品ではありません）</p><div class="cover-controls"><button id="helpAll" type="button">読んでね</button><button id="languageButton" type="button" data-user-content>言語/language</button><button id="stopEverything" type="button">全停止（60分後自動）</button></div></div></div></header>
  <section class="stack" aria-label="メニュー">
   <div class="card"><button class="card-main" data-mode="listen" type="button"><span class="icon" aria-hidden="true">♫</span><span class="card-copy"><span class="card-title">聴く</span><span class="card-desc">YouTubeの音・好きな曲を再生</span></span></button><button class="info" data-help="listen" aria-label="聴くの説明">?</button></div>
   <div class="card"><button class="card-main" data-mode="see" type="button"><span class="icon" aria-hidden="true">☁</span><span class="card-copy"><span class="card-title">観る</span><span class="card-desc" id="photoDesc">写真を表示・スワイプで選択</span></span></button><button class="info" data-help="see" aria-label="観るの説明">?</button></div>
@@ -36,7 +38,7 @@
   <div class="card whowatch-card"><button class="card-main" data-mode="whowatch" type="button"><span class="icon" aria-hidden="true">♥</span><span class="card-copy"><span class="card-title">ふわっち</span><span class="card-desc">ふわっちを開く</span></span></button></div>
  </section>
  <p class="note"><strong>これは玩具です。</strong>診断・治療・診察を行うものではありません。</p>
- <footer class="footer"><small class="app-version">ver. 1.057</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
+ <footer class="footer"><small class="app-version">ver. 1.058</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
 </main>
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><section class="sheet"><button class="close" id="closeBtn" aria-label="閉じる">×</button><div id="sheetContent"></div></section></div>
 <script>
@@ -720,8 +722,8 @@ function setLanguage(lang){
  document.title=tr('パニックパニック');
  translateTree();
 }
-function openLanguage(){const options=Object.entries(LANGS).map(([id,[name]])=>`<button type="button" class="language-choice ${id===currentLang?'active':''}" data-lang="${id}">${name}</button>`).join('');show(`<h2 id="sheetTitle">言語を選ぶ</h2><div class="language-grid">${options}</div><button class="stop" id="languageDone">戻る</button>`);document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{setLanguage(b.dataset.lang);close()});document.getElementById('languageDone').onclick=close;translateTree(content)}
-document.getElementById('languageButton').onclick=openLanguage;
+function openLanguage(){const options=Object.entries(LANGS).map(([id,[name]])=>`<button type="button" class="language-choice ${id===currentLang?'active':''}" data-lang="${id}">${name}</button>`).join('');show(`<h2 id="sheetTitle">言語を選ぶ</h2><div class="language-grid">${options}</div><button class="stop" id="languageDone">戻る</button>`);activeCorner.content.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{setLanguage(b.dataset.lang);close()});findControl('languageDone').onclick=close;translateTree(activeCorner.content)}
+document.getElementById('languageButton').onclick=()=>openCorner('language',openLanguage,true);
 new MutationObserver(records=>{
  for(const record of records)for(const node of record.addedNodes){
   if(node.nodeType===Node.TEXT_NODE)translateNode(node);
@@ -730,15 +732,62 @@ new MutationObserver(records=>{
 }).observe(document.body,{subtree:true,childList:true});
 setLanguage(currentLang);
 
-const DB_NAME='hitoiki-local-v1',STORE='media';let db,photoTimer=null,vibeTimer=null,buildingRaf=0,writingExit=null,savedHomeScrollY=0,urls=[],resizeHandler=null,sandSaveTimer=null,sandFlush=null;const overlay=document.getElementById('overlay'),content=document.getElementById('sheetContent');
+const DB_NAME='hitoiki-local-v1',STORE='media';let db,savedHomeScrollY=0;
+const cover=document.querySelector('main.app');
+const overlayTemplate=document.getElementById('overlay');
+overlayTemplate.remove();
+const corners=new Map();
+let activeCorner=null,viewRequest=0;
+function findControl(id){
+ return activeCorner?.panel.querySelector('#'+id)||cover.querySelector('#'+id);
+}
+function createCorner(key){
+ const panel=overlayTemplate.cloneNode(true);
+ panel.removeAttribute('id');
+ panel.classList.add('parked');
+ panel.inert=true;
+ const corner={panel,content:panel.querySelector('#sheetContent'),urls:new Set(),cleanup:null};
+ corners.set(key,corner);
+ panel.querySelector('#closeBtn').onclick=close;
+ panel.addEventListener('click',e=>{if(e.target===panel&&activeCorner===corner)close()});
+ document.body.appendChild(panel);
+ return corner;
+}
+function openCorner(key,enter,replace=false){
+ checkCoverStop();
+ cancelCoverStop();
+ if(!activeCorner)savedHomeScrollY=window.scrollY||0;
+ else parkCorner();
+ viewRequest++;
+ const corner=corners.get(key)||createCorner(key);
+ activeCorner=corner;
+ cover.inert=true;
+ corner.panel.inert=false;
+ corner.panel.classList.remove('parked');
+ corner.panel.classList.add('show');
+ if(replace||!corner.content.hasChildNodes())enter();
+ else corner.content.querySelector('button')?.focus();
+}
+function parkCorner(){
+ if(!activeCorner)return;
+ activeCorner.panel.inert=true;
+ activeCorner.panel.classList.add('parked');
+ activeCorner=null;
+ cover.inert=false;
+}
+function resetCorner(corner){
+ corner.cleanup?.();
+ corner.cleanup=null;
+ for(const media of corner.content.querySelectorAll('audio,video'))media.pause();
+ corner.content.replaceChildren();
+ for(const url of corner.urls)URL.revokeObjectURL(url);
+ corner.urls.clear();
+}
 // Storage and view lifecycle.
 function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE);req.onsuccess=()=>{db=req.result;resolve(db)};req.onerror=()=>reject(req.error)})}
 function get(key){return new Promise(resolve=>{if(!db)return resolve(null);const r=db.transaction(STORE,'readonly').objectStore(STORE).get(key);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>resolve(null)})}
 function put(key,value){return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(value,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
 function del(key){return new Promise(resolve=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(key);tx.oncomplete=resolve;tx.onerror=resolve})}
-function releaseUrl(url){URL.revokeObjectURL(url);const i=urls.indexOf(url);if(i>=0)urls.splice(i,1)}
-function stopMedia(){content.querySelectorAll('iframe.yt-player').forEach(frame=>frame.remove());document.querySelectorAll('audio,video').forEach(p=>{try{p.pause();p.currentTime=0}catch{}});urls.forEach(URL.revokeObjectURL);urls=[]}
-function stopAll(){const exit=writingExit;writingExit=null;try{exit?.()}catch(error){document.querySelectorAll('body>.sand-stage.writing-full').forEach(stage=>stage.remove());document.body.classList.remove('writing-mode');console.error('書道画面の終了処理:',error)}document.body.classList.remove('writing-mode');if(buildingRaf){cancelAnimationFrame(buildingRaf);buildingRaf=0}stopMedia();if(photoTimer){clearInterval(photoTimer);photoTimer=null}if(vibeTimer){clearInterval(vibeTimer);vibeTimer=null}if(resizeHandler){window.removeEventListener('resize',resizeHandler);resizeHandler=null}if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}sandFlush?.();sandFlush=null;if('vibrate'in navigator)navigator.vibrate(0)}
 const COVER_STOP_DELAY=60*60*1000;
 let coverStopTimer=null,coverStopDeadline=null;
 function cancelCoverStop(){
@@ -748,11 +797,23 @@ function cancelCoverStop(){
 }
 function stopEverything(){
  cancelCoverStop();
- stopAll();
+ viewRequest++;
+ parkCorner();
+ for(const corner of corners.values()){
+  resetCorner(corner);
+  corner.panel.remove();
+ }
+ corners.clear();
+ if('vibrate'in navigator)navigator.vibrate(0);
 }
 function checkCoverStop(){
- if(coverStopDeadline===null||overlay.classList.contains('show'))return;
- if(Date.now()>=coverStopDeadline)stopEverything();
+ if(coverStopDeadline===null||activeCorner)return;
+ const remaining=coverStopDeadline-Date.now();
+ if(remaining<=0)stopEverything();
+ else{
+  clearTimeout(coverStopTimer);
+  coverStopTimer=setTimeout(checkCoverStop,remaining);
+ }
 }
 function scheduleCoverStop(){
  cancelCoverStop();
@@ -763,12 +824,35 @@ document.getElementById('stopEverything').onclick=stopEverything;
 document.addEventListener('visibilitychange',checkCoverStop);
 window.addEventListener('pageshow',checkCoverStop);
 scheduleCoverStop();
-function show(html,full=false){cancelCoverStop();const wasOpen=overlay.classList.contains('show');stopAll();if(!wasOpen)savedHomeScrollY=window.scrollY||document.documentElement.scrollTop||0;overlay.classList.remove('game-view','listen-view');const closeBtn=document.getElementById('closeBtn');closeBtn.textContent='戻る';closeBtn.setAttribute('aria-label','戻る');closeBtn.classList.remove('close-hidden');closeBtn.classList.add('close-back');content.innerHTML=html;content.querySelectorAll('button').forEach(b=>{const t=b.textContent.trim();if(t==='戻る'||t==='閉じる'||t.includes('戻る'))b.classList.add('uniform-back')});translateTree(content);if(/<button\b[^>]*>[^<]*戻る/.test(html))closeBtn.classList.add('close-hidden');overlay.classList.toggle('full-view',full);overlay.classList.add('show');if(closeBtn.classList.contains('close-hidden'))content.querySelector('button')?.focus();else closeBtn.focus()}
-function close(){try{stopAll()}finally{document.body.classList.remove('writing-mode');content.replaceChildren();overlay.classList.remove('show','full-view','game-view','listen-view');scheduleCoverStop();requestAnimationFrame(()=>window.scrollTo({top:savedHomeScrollY,left:0,behavior:'auto'}))}}
-document.getElementById('closeBtn').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('show'))close()});
+function show(html,full=false){
+ if(!activeCorner)return;
+ viewRequest++;
+ const {panel,content}=activeCorner;
+ resetCorner(activeCorner);
+ panel.classList.remove('game-view','listen-view');
+ const closeBtn=panel.querySelector('#closeBtn');
+ closeBtn.textContent='戻る';
+ closeBtn.classList.toggle('close-hidden',/<button\b[^>]*>[^<]*戻る/.test(html));
+ closeBtn.classList.add('close-back');
+ content.innerHTML=html;
+ for(const button of content.querySelectorAll('button')){
+  const text=button.textContent.trim();
+  if(text==='閉じる'||text.includes('戻る'))button.classList.add('uniform-back');
+ }
+ panel.classList.toggle('full-view',full);
+ translateTree(panel);
+ (closeBtn.classList.contains('close-hidden')?content.querySelector('button'):closeBtn)?.focus();
+}
+function close(){
+ viewRequest++;
+ parkCorner();
+ scheduleCoverStop();
+ requestAnimationFrame(()=>{if(!activeCorner)window.scrollTo({top:savedHomeScrollY,left:0,behavior:'auto'})});
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeCorner)close()});
 const explain={listen:['聴く','4つのYouTube動画を再生できます。動画名やリンクは「動画を変更」から差し替えられます。「わたし好みの音楽」には端末内の曲を1曲登録できます。'],see:['観る','写真は最大30枚。写真は全画面で表示。1回タップでは何も起きず、2回タップで拡大を元に戻します。左右のスワイプで写真を切り替えます。10秒ごとの自動切替もできます。観るボタンを2秒押すと登録画面です。']};
-function help(mode){const [t,d]=explain[mode];show(`<h2 id="sheetTitle">${t}の使い方</h2><p>${d}</p><button class="stop" id="helpDone">閉じる</button>`);document.getElementById('helpDone').onclick=close}
-document.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>help(b.dataset.help));document.getElementById('helpAll').onclick=()=>{show(`<h2 id="sheetTitle">読んでね</h2><p class="help">この説明は、日本国内での使用を前提としています。</p>
+function help(mode){const [t,d]=explain[mode];show(`<h2 id="sheetTitle">${t}の使い方</h2><p>${d}</p><button class="stop" id="helpDone">閉じる</button>`);findControl('helpDone').onclick=close}
+document.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>openCorner('help',()=>help(b.dataset.help),true));findControl('helpAll').onclick=()=>openCorner('help',openGuide,true);function openGuide(){show(`<h2 id="sheetTitle">読んでね</h2><p class="help">この説明は、日本国内での使用を前提としています。</p>
 <h3>アプリの使い方</h3><p>聴く：YouTube動画を選んで再生します。動画名やURLは「YouTube動画を変更」から差し替えられます。「わたし好みの音楽」にはスマホ内の曲を1曲登録できます。<br>左右のスワイプで写真と動画を切り替えます。動画は「▶ 動画を再生」を押します。「観る」を2秒長押しすると登録できます。<br>表紙の「感じる　落ち着く動画」「感じる　書道で落ち着く」から直接開けます。</p>
 <h3>iPhoneでホーム画面にアイコンを作る</h3><ol><li>公開ページをSafariで開きます。</li><li>共有ボタン（四角から上向き矢印）を押します。</li><li>メニューから「ホーム画面に追加」を選び、「追加」を押します。項目が見つからない場合は、共有メニューの「アクションを編集」を確認してください。</li></ol>
 <h3>Androidでホーム画面にアイコンを作る</h3><ol><li>公開ページをChromeで開きます。</li><li>右上の「︙」を押し、「インストールとショートカットを作成」を選びます。</li><li>「ショートカットを作成」または「インストール」を選び、「追加」を押します。端末やChromeの版によって表示名が異なる場合があります。</li></ol>
@@ -776,7 +860,7 @@ document.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>help(b.dataset
 <h3>ふわっちからの戻り方</h3><p>ふわっちは同じタブで開きます。見終わったら、ブラウザの「戻る」矢印でアプリに戻ってください。</p>
 <h3>YouTubeからの戻り方</h3><p>動画はアプリ内で再生されます。画面内の「戻る」でアプリに戻ります。「YouTubeで開く」を選んだ場合は、ブラウザの「戻る」矢印か、端末のアプリ切替画面で元のブラウザに戻ってください。</p>
 <p class="help"><b>ご注意：</b>これは玩具です。医療機器ではなく、診断・治療・診察を行いません。動作、保存、通信、音声再生、表示内容、気分への効果などについて一切保証しません。登録した写真と曲はこの端末のブラウザ内に保存されます。YouTube動画の再生にはインターネット通信が必要です。別の端末やブラウザには登録内容が自動で移りません。</p>
-<button class="primary" id="openResearch">研究資料・出典を読む</button><button class="stop" id="helpDone">閉じる</button>`);document.getElementById('helpDone').onclick=close;document.getElementById('openResearch').onclick=researchPage};
+<button class="primary" id="openResearch">研究資料・出典を読む</button><button class="stop" id="helpDone">閉じる</button>`);findControl('helpDone').onclick=close;findControl('openResearch').onclick=researchPage};
 // Listening.
 const DEFAULT_LISTEN_VIDEOS=[
  {title:'川のせせらぎ・ひぐらしの鳴き声',url:'https://www.youtube.com/watch?v=uV7M4Gn8IEw'},
@@ -786,20 +870,24 @@ const DEFAULT_LISTEN_VIDEOS=[
 ];
 async function loadListenVideos(){const saved=await get('listenVideos');if(Array.isArray(saved)&&saved.length===4&&saved.every(v=>v&&typeof v.title==='string'&&typeof v.url==='string'&&parseYouTube(v.url)))return saved;await put('listenVideos',DEFAULT_LISTEN_VIDEOS);return DEFAULT_LISTEN_VIDEOS}
 async function openListen(){
+ const requestId=viewRequest;
  const videos=await loadListenVideos();
- show(`<h2 id="sheetTitle">聴く</h2><p>聞きたい動画を選んでください。YouTubeの再生マークが出たら押します。</p><div class="youtube-shortcuts"><button id="youtubeHomeOne" type="button">YouTube</button><button id="youtubeHomeTwo" type="button">YouTube</button></div><div class="sound-grid" id="listenVideoGrid"></div><button class="favorite-music-button" id="favoriteMusicBtn">わたし好みの音楽</button><div class="listen-actions"><button class="secondary" id="editListenVideos">YouTube動画を変更</button><button class="stop" id="listenClose">戻る</button></div><p class="help">YouTubeはインターネット通信を使います。自分の曲はこの端末のブラウザ内に1曲保存します。</p>`);overlay.classList.add("listen-view");
- const grid=document.getElementById('listenVideoGrid');
+ if(requestId!==viewRequest)return;
+ show(`<h2 id="sheetTitle">聴く</h2><p>聞きたい動画を選んでください。YouTubeの再生マークが出たら押します。</p><div class="youtube-shortcuts"><button id="youtubeHomeOne" type="button">YouTube</button><button id="youtubeHomeTwo" type="button">YouTube</button></div><div class="sound-grid" id="listenVideoGrid"></div><button class="favorite-music-button" id="favoriteMusicBtn">わたし好みの音楽</button><div class="listen-actions"><button class="secondary" id="editListenVideos">YouTube動画を変更</button><button class="stop" id="listenClose">戻る</button></div><p class="help">YouTubeはインターネット通信を使います。自分の曲はこの端末のブラウザ内に1曲保存します。</p>`);activeCorner.panel.classList.add("listen-view");
+ const grid=findControl('listenVideoGrid');
  videos.forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='sound-btn';b.innerHTML=`${escapeHTML(item.title)}<small>YouTubeで再生</small>`;b.onclick=()=>playYouTube(index);grid.appendChild(b)});
- document.getElementById('youtubeHomeOne').onclick=()=>window.location.assign('https://www.youtube.com/');document.getElementById('youtubeHomeTwo').onclick=()=>window.location.assign('https://www.youtube.com/');document.getElementById('favoriteMusicBtn').onclick=openFavoriteMusic;
- document.getElementById('editListenVideos').onclick=openYouTube;
- document.getElementById('listenClose').onclick=close;
+ findControl('youtubeHomeOne').onclick=()=>window.location.assign('https://www.youtube.com/');findControl('youtubeHomeTwo').onclick=()=>window.location.assign('https://www.youtube.com/');findControl('favoriteMusicBtn').onclick=openFavoriteMusic;
+ findControl('editListenVideos').onclick=openYouTube;
+ findControl('listenClose').onclick=close;
 }
 async function openFavoriteMusic(){
+ const requestId=viewRequest;
  const record=await get('favoriteMusic');
+ if(requestId!==viewRequest)return;
  if(!record?.blob){registerFavoriteMusic();return}
  show(`<h2 id="sheetTitle">わたし好みの音楽</h2><p>${escapeHTML(record.name||'登録した音楽')}</p><div class="audio-controls" role="group" aria-label="音楽の再生操作"><button class="primary" id="musicToggle" type="button">再生</button><button class="secondary" id="musicRepeat" type="button" aria-pressed="false">リピート：オフ</button><span class="audio-time" id="musicTime">0:00 / --:--</span><input id="musicSeek" type="range" min="0" max="1000" value="0" aria-label="再生位置"></div><audio id="favoriteAudio" preload="metadata" class="audio-engine"></audio><div class="actions"><button class="primary" id="replaceFavoriteMusic">別の曲を登録</button><button class="secondary" id="deleteFavoriteMusic">この曲を削除</button><button class="stop" id="favoriteMusicBack">戻る</button></div>`);
- const audio=document.getElementById('favoriteAudio'),url=URL.createObjectURL(record.blob);urls.push(url);audio.src=url;
- const playButton=document.getElementById('musicToggle'),repeatButton=document.getElementById('musicRepeat'),seek=document.getElementById('musicSeek'),time=document.getElementById('musicTime');
+ const audio=findControl('favoriteAudio'),url=galleryURL(record.blob);audio.src=url;
+ const playButton=findControl('musicToggle'),repeatButton=findControl('musicRepeat'),seek=findControl('musicSeek'),time=findControl('musicTime');
  const label=key=>currentLang==='ja'?key:(TXT[currentLang]?.[key]||key);let repeatEnabled=false;
  const clock=value=>{if(!Number.isFinite(value)||value<0)return '--:--';const seconds=Math.floor(value);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`};
  const refresh=()=>{playButton.textContent=label(audio.paused?'再生':'一時停止');repeatButton.textContent=label(repeatEnabled?'リピート：オン':'リピート：オフ');repeatButton.setAttribute('aria-pressed',String(repeatEnabled));const duration=Number.isFinite(audio.duration)?audio.duration:0;seek.value=duration?String(Math.round(audio.currentTime/duration*1000)):'0';time.textContent=`${clock(audio.currentTime)} / ${clock(audio.duration)}`};
@@ -808,14 +896,14 @@ async function openFavoriteMusic(){
  seek.oninput=()=>{if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=audio.duration*(Number(seek.value)/1000)};
  ['play','pause','ended','timeupdate','loadedmetadata','durationchange'].forEach(event=>audio.addEventListener(event,refresh));
  refresh();
- document.getElementById('replaceFavoriteMusic').onclick=registerFavoriteMusic;
- document.getElementById('deleteFavoriteMusic').onclick=async()=>{if(!confirm(tr('登録した曲を削除しますか？')))return;await del('favoriteMusic');registerFavoriteMusic()};
- document.getElementById('favoriteMusicBack').onclick=openListen;
+ findControl('replaceFavoriteMusic').onclick=registerFavoriteMusic;
+ findControl('deleteFavoriteMusic').onclick=async()=>{if(!confirm(tr('登録した曲を削除しますか？')))return;const requestId=viewRequest;await del('favoriteMusic');if(requestId===viewRequest)registerFavoriteMusic()};
+ findControl('favoriteMusicBack').onclick=openListen;
 }
 function registerFavoriteMusic(){
  show(`<h2 id="sheetTitle">わたし好みの音楽</h2><p>この端末にある音楽を1曲選んでください。</p><div class="file-row"><label for="favoriteMusicFile">音楽ファイルを選ぶ</label><input id="favoriteMusicFile" type="file" accept="audio/*"><small>選んだ曲はこの端末のブラウザ内に保存されます。</small><div class="status" id="favoriteMusicStatus"></div></div><button class="stop" id="favoriteMusicBack">戻る</button>`);
- document.getElementById('favoriteMusicBack').onclick=openListen;
- document.getElementById('favoriteMusicFile').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;const status=document.getElementById('favoriteMusicStatus');status.textContent='曲を保存しています…';try{await put('favoriteMusic',{blob:file,name:file.name});openFavoriteMusic()}catch{status.textContent='保存できませんでした。空き容量を確認してください。'}};
+ findControl('favoriteMusicBack').onclick=openListen;
+ findControl('favoriteMusicFile').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;const status=findControl('favoriteMusicStatus');status.textContent='曲を保存しています…';try{const requestId=viewRequest;await put('favoriteMusic',{blob:file,name:file.name});if(requestId===viewRequest)openFavoriteMusic()}catch{status.textContent='保存できませんでした。空き容量を確認してください。'}};
 }
 // Photos.
 const MEDIA_LIMIT=30;
@@ -833,9 +921,9 @@ function updateGalleryItems(transform){
   tx.onabort=()=>reject(tx.error);
  });
 }
-function galleryURL(blob){
+function galleryURL(blob,corner=activeCorner){
  const url=URL.createObjectURL(blob);
- urls.push(url);
+ corner.urls.add(url);
  return url;
 }
 function makeVideoPreview(blob){
@@ -876,10 +964,12 @@ function makeVideoPreview(blob){
  });
 }
 async function registerPhotos(){
+ const requestId=viewRequest;
  const existing=await loadPhotos();
+ if(requestId!==viewRequest)return;
  show(`<h2 id="sheetTitle">写真・動画を登録</h2><p>写真とMP4動画を合わせて最大30件。不要な項目は×で削除できます。</p><div class="photo-count" id="photoCount">${existing.length} / 30</div><div class="photo-list" id="photoList"></div><div class="file-row"><label for="photosFile">写真・動画を追加</label><input id="photosFile" type="file" accept="image/*,video/mp4,.mp4" multiple><small>選んだ写真と動画は、この端末のブラウザー内に保存します。</small><div class="status" id="uploadStatus" role="status"></div></div><button class="stop" id="photosDone">戻る</button>`);
- const list=document.getElementById('photoList'),input=document.getElementById('photosFile');
- const status=document.getElementById('uploadStatus');
+ const list=findControl('photoList'),input=findControl('photosFile');
+ const status=findControl('uploadStatus');
  for(const [index,entry] of existing.entries()){
   const item=document.createElement('div');
   item.className='photo-item';
@@ -911,7 +1001,7 @@ async function registerPhotos(){
    try{
     await updateGalleryItems(items=>items.filter((candidate,i)=>entry.id?candidate.id!==entry.id:
      i!==index||candidate.name!==entry.name||candidate.blob.size!==entry.blob.size));
-    if(list.isConnected)registerPhotos();
+    if(list.isConnected&&activeCorner?.content.contains(list))registerPhotos();
    }catch{
     input.disabled=false;
     status.textContent='保存できませんでした。もう一度お試しください';
@@ -920,7 +1010,7 @@ async function registerPhotos(){
   item.append(open,remove);
   list.appendChild(item);
  }
- document.getElementById('photosDone').onclick=()=>showGallery();
+ findControl('photosDone').onclick=()=>showGallery();
  input.onchange=async()=>{
   const selected=[...input.files];
   if(!selected.length)return;
@@ -939,7 +1029,7 @@ async function registerPhotos(){
    }
    if(!input.isConnected)return;
    await updateGalleryItems(items=>items.concat(additions.slice(0,Math.max(0,MEDIA_LIMIT-items.length))));
-   if(input.isConnected)await registerPhotos();
+   if(input.isConnected&&activeCorner?.content.contains(input))await registerPhotos();
   }catch{
    status.textContent='保存できませんでした。空き容量を確認してください。';
    input.value='';
@@ -949,30 +1039,35 @@ async function registerPhotos(){
 }
 function playGalleryVideo(entry,index){
  show(`<h2 id="sheetTitle">動画を再生</h2><video class="gallery-video" id="galleryVideo" controls playsinline preload="metadata"></video><p class="status" id="galleryVideoStatus" role="status"></p><button class="stop" id="galleryVideoBack">戻る</button>`);
- const video=document.getElementById('galleryVideo');
- video.onerror=()=>{document.getElementById('galleryVideoStatus').textContent='動画を再生できませんでした。'};
+ const video=findControl('galleryVideo');
+ video.onerror=()=>{findControl('galleryVideoStatus').textContent='動画を再生できませんでした。'};
  if(entry.preview)video.poster=entry.preview;
  video.src=galleryURL(entry.blob);
- document.getElementById('galleryVideoBack').onclick=()=>showGallery(index);
+ findControl('galleryVideoBack').onclick=()=>showGallery(index);
 }
 async function showGallery(initialIndex=0){
+ const requestId=viewRequest;
  const photos=await loadPhotos();
- if(!photos.length){show(`<h2 id="sheetTitle" style="color:#394b49;padding:24px 20px">観る</h2><div class="photo-empty" style="padding:20px;color:#394b49;text-align:center"><p>写真・動画はまだ登録されていません。</p><button class="primary" id="addFirst">写真・動画を登録</button><button class="secondary" id="exitEmpty" style="margin-left:8px">戻る</button></div>`,true);document.getElementById('addFirst').onclick=registerPhotos;document.getElementById('exitEmpty').onclick=close;return}
+ if(requestId!==viewRequest)return;
+ if(!photos.length){show(`<h2 id="sheetTitle" style="color:#394b49;padding:24px 20px">観る</h2><div class="photo-empty" style="padding:20px;color:#394b49;text-align:center"><p>写真・動画はまだ登録されていません。</p><button class="primary" id="addFirst">写真・動画を登録</button><button class="secondary" id="exitEmpty" style="margin-left:8px">戻る</button></div>`,true);findControl('addFirst').onclick=registerPhotos;findControl('exitEmpty').onclick=close;return}
  let index=Math.max(0,Math.min(initialIndex,photos.length-1)),auto=false,prepared=0,animating=false,photoScale=1,panX=0,panY=0,gesture=null,lastPhotoTap=null,pinchInProgress=false;
  const pointers=new Map();
  show(`<div class="gallery full-gallery" id="gallery"><img class="slide-img" id="slideA" alt="登録写真"><img class="slide-img" id="slideB" alt="次の写真" style="visibility:hidden"><div class="photo-count gallery-position" id="galleryCount" style="position:absolute;left:50%;bottom:calc(70px + env(safe-area-inset-bottom));top:auto;transform:translateX(-50%);padding:4px 9px;border-radius:999px;background:#18131b99;color:#fff;z-index:3;font-size:11px;pointer-events:none"></div><button class="photo-back" id="photoBack" type="button">戻る</button><button class="gallery-play" id="playGallery" type="button" hidden>▶ 動画を再生</button></div><div class="full-photo-bar"><button id="autoBtn">10秒切替：オフ</button><button id="addMore">写真・動画を登録・編集</button></div>`,true);
- let current=document.getElementById('slideA'),next=document.getElementById('slideB');
- const count=document.getElementById('galleryCount'),stage=document.getElementById('gallery');
- const playButton=document.getElementById('playGallery');
+ let current=findControl('slideA'),next=findControl('slideB');
+ const count=findControl('galleryCount'),stage=findControl('gallery');
+ const corner=activeCorner;
+ let photoTimer=null;
+ corner.cleanup=()=>clearInterval(photoTimer);
+ const playButton=findControl('playGallery');
  playButton.onclick=()=>playGalleryVideo(photos[index],index);
  function setPhoto(el,i){
-  if(el.dataset.url){releaseUrl(el.dataset.url);delete el.dataset.url}
+  if(el.dataset.url){URL.revokeObjectURL(el.dataset.url);corner.urls.delete(el.dataset.url);delete el.dataset.url}
   const entry=photos[i];
   if(entry.kind==='video'){
    if(entry.preview)el.src=entry.preview;
    else el.removeAttribute('src');
   }else{
-   const url=galleryURL(entry.blob);
+   const url=galleryURL(entry.blob,corner);
    el.dataset.url=url;
    el.src=url;
   }
@@ -988,8 +1083,8 @@ async function showGallery(initialIndex=0){
  setPhoto(current,index);updateCaption();
  function slide(dir){if(animating)return;lastPhotoTap=null;animating=true;resetZoom();prep(dir);const w=stageWidth(),out=dir>0?-w:w;current.style.transition='transform .24s ease';next.style.transition='transform .24s ease';current.style.transform=`translateX(${out}px)`;next.style.transform='translateX(0px)';setTimeout(()=>{index=(index+dir+photos.length)%photos.length;const old=current;current=next;next=old;current.style.transition='none';current.style.transform='translateX(0px)';current.style.scale='1';current.style.translate='0px 0px';current.style.visibility='visible';next.style.transition='none';next.style.visibility='hidden';next.style.transform=`translateX(${dir>0?w:-w}px)`;next.style.scale='1';next.style.translate='0px 0px';prepared=0;updateCaption();animating=false},270)}
  function snapBack(){if(animating)return;current.style.transition='transform .2s ease';next.style.transition='transform .2s ease';current.style.transform='translateX(0px)';next.style.transform=`translateX(${prepared>0?stageWidth():-stageWidth()}px)`;setTimeout(()=>{next.style.visibility='hidden';current.style.transition='none';next.style.transition='none';prepared=0},220)}
- document.getElementById('addMore').onclick=registerPhotos;document.getElementById('photoBack').onclick=close;
- document.getElementById('autoBtn').onclick=e=>{auto=!auto;e.currentTarget.textContent=auto?'10秒切替：オン':'10秒切替：オフ';if(photoTimer)clearInterval(photoTimer);photoTimer=auto?setInterval(()=>slide(1),10000):null};
+ findControl('addMore').onclick=registerPhotos;findControl('photoBack').onclick=close;
+ findControl('autoBtn').onclick=e=>{auto=!auto;e.currentTarget.textContent=auto?'10秒切替：オン':'10秒切替：オフ';if(photoTimer)clearInterval(photoTimer);photoTimer=auto?setInterval(()=>slide(1),10000):null};
  function drawSwipePreview(dx){const dir=dx<0?1:-1;prep(dir);const width=stageWidth();current.style.transform=`translateX(${dx}px)`;next.style.transform=`translateX(${(dir>0?width:-width)+dx}px)`}
  stage.addEventListener('pointerdown',e=>{
   if(animating||e.target.closest('button'))return;
@@ -1063,11 +1158,11 @@ async function showGallery(initialIndex=0){
 function playFeaturedYouTube(){
  const url='https://www.youtube.com/watch?v=kh_NYYDH8uA',parsed=parseYouTube(url);if(!parsed)return;
  show(`<h2 id="sheetTitle">パニック障害を乗り越えました</h2><iframe class="yt-player" id="featuredYtFrame" title="パニック障害を乗り越えました" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="actions"><button class="secondary" id="featuredYtExternal">YouTubeで開く</button><button class="stop" id="featuredYtBack">戻る</button></div><p class="help">自動再生されない場合は、動画の再生マークを押してください。</p>`);
- document.getElementById('featuredYtFrame').src=parsed.embed+(parsed.embed.includes('?')?'&':'?')+'autoplay=1&playsinline=1';
- document.getElementById('featuredYtExternal').onclick=()=>window.location.assign(parsed.external);
- document.getElementById('featuredYtBack').onclick=close;
+ findControl('featuredYtFrame').src=parsed.embed+(parsed.embed.includes('?')?'&':'?')+'autoplay=1&playsinline=1';
+ findControl('featuredYtExternal').onclick=()=>window.location.assign(parsed.external);
+ findControl('featuredYtBack').onclick=close;
 }
-function bindMain(btn,mode){let timer=null,held=false;btn.addEventListener('pointerdown',()=>{held=false;if(mode==='see')timer=setTimeout(()=>{held=true;registerPhotos()},2000)});['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>clearTimeout(timer)));btn.addEventListener('contextmenu',e=>e.preventDefault());btn.addEventListener('click',e=>{if(held){e.preventDefault();held=false;return}if(mode==='listen')openListen();if(mode==='see')showGallery();if(mode==='feelBall')startFeel('ball');if(mode==='feelWriting')startFeel('writing');if(mode==='youtube')playFeaturedYouTube();if(mode==='whowatch')window.location.assign('https://whowatch.tv')})}
+function bindMain(btn,mode){let timer=null,held=false;btn.addEventListener('pointerdown',()=>{held=false;if(mode==='see')timer=setTimeout(()=>{held=true;openCorner('see',registerPhotos,true)},2000)});['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>clearTimeout(timer)));btn.addEventListener('contextmenu',e=>e.preventDefault());btn.addEventListener('click',e=>{if(held){e.preventDefault();held=false;return}if(mode==='listen')openCorner('listen',openListen);if(mode==='see')openCorner('see',showGallery);if(mode==='feelBall')openCorner('feelBall',()=>startFeel('ball'));if(mode==='feelWriting')openCorner('feelWriting',()=>startFeel('writing'));if(mode==='youtube')openCorner('youtube',playFeaturedYouTube);if(mode==='whowatch')window.location.assign('https://whowatch.tv')})}
 document.querySelectorAll('.card-main').forEach(b=>bindMain(b,b.dataset.mode));
 // Feeling modes.
 window.addEventListener('message',e=>{if(e.data?.type==='panicpanic-back')close()});
@@ -1084,11 +1179,24 @@ function stampVertical(ctx,text,{rows,columns,advance,right,top}){
   row++;
  }
 }
-function startFeel(which='ball'){show(`<div class="feel-root"><div class="feel-header"><h2 id="sheetTitle">落ち着く動画</h2><div class="game-header-actions"><button class="game-back" id="courseChange" type="button">コース変更</button><button class="game-back" id="writingSettingsBtn" type="button" hidden>設定</button><button class="game-back" id="gameBack" type="button">戻る</button></div></div><div id="ballPanel" role="tabpanel"><div class="saturation-stage" aria-label="大きさと速度の違う最大8個のボールが7階を巡る連続アニメーション"><canvas id="buildingCanvas"></canvas></div><div class="ball-controls" id="ballControls" hidden><div class="ball-count-row"><span class="ball-count-label">ボールの数</span><div class="ball-count-options" id="ballCountOptions" role="group" aria-label="表示するボールの数"><button type="button" data-count="1">1</button><button type="button" data-count="2">2</button><button type="button" data-count="3" class="active" aria-pressed="true">3</button><button type="button" data-count="4">4</button><button type="button" data-count="5">5</button><button type="button" data-count="6">6</button><button type="button" data-count="7">7</button><button type="button" data-count="8">8</button></div></div><div class="ball-edit-row"><button id="eraseFloorBtn" type="button" aria-pressed="false">床を消す</button><button id="restoreFloorBtn" type="button">元通り</button></div><div class="obstacle-tools"><div class="obstacle-add-row"><button type="button" data-add-obstacle="rod">＋棒</button><button type="button" data-add-obstacle="disk">＋円盤</button><button type="button" data-add-obstacle="tire">＋タイヤ</button><span id="obstacleSelected">置いた物は指で移動</span></div><div class="obstacle-edit-row"><button id="deleteObstacle" type="button">選択を削除</button><button id="clearObstacles" type="button">全消去</button></div></div><div class="ball-size-controls" id="ballSizeControls" aria-label="ボールごとの大きさ"></div><button class="ball-reroll" id="randomizeBalls" type="button">サイズの組み合わせをランダムにする</button><p class="ball-help">小さいボールほど速く動きます。ボール同士はぶつかりません。床を消すを押して床をなぞると穴になります。棒・円盤・タイヤを置いて指で移動。棒の左右の端をタップすると、押した側が15度下がります。</p></div><div class="vibe-note" id="vibeNote" style="margin:8px 18px">ボールが最下部から最上部へ戻ります</div></div><div id="writingPanel" class="writing-panel" role="tabpanel" hidden><div id="writingCanvasView" class="writing-canvas-view"><div class="sand-stage" id="sandStage"><canvas id="sandCanvas" aria-label="指で自由に文字や模様を書く"></canvas></div></div><section id="writingSettingsPanel" class="writing-settings-panel" aria-label="書道の設定" hidden><h3>書道の設定</h3><div class="writing-settings-grid"><div class="writing-setting-group"><h4>色替え</h4><div class="sand-tools writing-color-tools"><button id="sandColor" data-theme="sand" type="button">砂色</button><button id="inkColor" data-theme="ink" type="button">白地・黒墨</button></div></div><button id="clearSand" class="writing-action-button" type="button">消去</button><div class="writing-setting-group calligraphy-tools"><button id="samplePreview" class="sample-preview" type="button"><span>お手本表示：</span><strong id="samplePreviewText" data-user-content>大丈夫</strong><small>（押すと変更）</small></button></div><button id="stampCalligraphy" class="writing-action-button stamp-action" type="button">お手本記入</button></div><div class="writing-settings-actions"><button id="writingSettingsBack" class="secondary" type="button">戻る</button><button id="writingStart" class="primary" type="button">開始</button></div></section></div></div>`);const isWriting=which==='writing';overlay.classList.add('game-view');document.getElementById('ballPanel').hidden=isWriting;document.getElementById('writingPanel').hidden=!isWriting;document.getElementById('sheetTitle').textContent=isWriting?'書道で落ち着く':'落ち着く動画';const courseButton=document.getElementById('courseChange'),ballControls=document.getElementById('ballControls');courseButton.hidden=isWriting;let courseOpen=false;courseButton.onclick=()=>{courseOpen=!courseOpen;ballControls.hidden=!courseOpen;const ja=courseOpen?'変更終了':'コース変更';courseButton.textContent=ja;courseButton.setAttribute('aria-expanded',String(courseOpen));requestAnimationFrame(resize)};ballControls.hidden=true;document.getElementById('gameBack').onclick=close;const feelClose=document.getElementById('closeBtn');feelClose.textContent='戻る';feelClose.setAttribute('aria-label','戻る');feelClose.classList.add('close-back');const canvas=document.getElementById('sandCanvas'),stage=canvas.parentElement,ctx=canvas.getContext('2d'),buildingCanvas=document.getElementById('buildingCanvas'),buildingStage=buildingCanvas.parentElement,bctx=buildingCanvas.getContext('2d'),sandStage=document.getElementById('sandStage'),writingCanvasView=document.getElementById('writingCanvasView'),writingSettingsPanel=document.getElementById('writingSettingsPanel'),samplePreviewText=document.getElementById('samplePreviewText');let sampleText='大丈夫',sampleChanged=false;let drawing=false,pointerId=null,lastPoint=null,theme='ink',themeLoaded=false;
+function startFeel(which='ball'){
+ const corner=activeCorner,overlay=corner.panel;
+ const findControl=id=>corner.content.querySelector('#'+id);
+ let buildingRaf=0,vibeTimer=null,sandSaveTimer=null,sandFlush=null;
+ corner.cleanup=null;
+ show(`<div class="feel-root"><div class="feel-header"><h2 id="sheetTitle">落ち着く動画</h2><div class="game-header-actions"><button class="game-back" id="courseChange" type="button">コース変更</button><button class="game-back" id="writingSettingsBtn" type="button" hidden>設定</button><button class="game-back" id="gameBack" type="button">戻る</button></div></div><div id="ballPanel" role="tabpanel"><div class="saturation-stage" aria-label="大きさと速度の違う最大8個のボールが7階を巡る連続アニメーション"><canvas id="buildingCanvas"></canvas></div><div class="ball-controls" id="ballControls" hidden><div class="ball-count-row"><span class="ball-count-label">ボールの数</span><div class="ball-count-options" id="ballCountOptions" role="group" aria-label="表示するボールの数"><button type="button" data-count="1">1</button><button type="button" data-count="2">2</button><button type="button" data-count="3" class="active" aria-pressed="true">3</button><button type="button" data-count="4">4</button><button type="button" data-count="5">5</button><button type="button" data-count="6">6</button><button type="button" data-count="7">7</button><button type="button" data-count="8">8</button></div></div><div class="ball-edit-row"><button id="eraseFloorBtn" type="button" aria-pressed="false">床を消す</button><button id="restoreFloorBtn" type="button">元通り</button></div><div class="obstacle-tools"><div class="obstacle-add-row"><button type="button" data-add-obstacle="rod">＋棒</button><button type="button" data-add-obstacle="disk">＋円盤</button><button type="button" data-add-obstacle="tire">＋タイヤ</button><span id="obstacleSelected">置いた物は指で移動</span></div><div class="obstacle-edit-row"><button id="deleteObstacle" type="button">選択を削除</button><button id="clearObstacles" type="button">全消去</button></div></div><div class="ball-size-controls" id="ballSizeControls" aria-label="ボールごとの大きさ"></div><button class="ball-reroll" id="randomizeBalls" type="button">サイズの組み合わせをランダムにする</button><p class="ball-help">小さいボールほど速く動きます。ボール同士はぶつかりません。床を消すを押して床をなぞると穴になります。棒・円盤・タイヤを置いて指で移動。棒の左右の端をタップすると、押した側が15度下がります。</p></div><div class="vibe-note" id="vibeNote" style="margin:8px 18px">ボールが最下部から最上部へ戻ります</div></div><div id="writingPanel" class="writing-panel" role="tabpanel" hidden><div id="writingCanvasView" class="writing-canvas-view"><div class="sand-stage" id="sandStage"><canvas id="sandCanvas" aria-label="指で自由に文字や模様を書く"></canvas></div></div><section id="writingSettingsPanel" class="writing-settings-panel" aria-label="書道の設定" hidden><h3>書道の設定</h3><div class="writing-settings-grid"><div class="writing-setting-group"><h4>色替え</h4><div class="sand-tools writing-color-tools"><button id="sandColor" data-theme="sand" type="button">砂色</button><button id="inkColor" data-theme="ink" type="button">白地・黒墨</button></div></div><button id="clearSand" class="writing-action-button" type="button">消去</button><div class="writing-setting-group calligraphy-tools"><button id="samplePreview" class="sample-preview" type="button"><span>お手本表示：</span><strong id="samplePreviewText" data-user-content>大丈夫</strong><small>（押すと変更）</small></button></div><button id="stampCalligraphy" class="writing-action-button stamp-action" type="button">お手本記入</button></div><div class="writing-settings-actions"><button id="writingSettingsBack" class="secondary" type="button">戻る</button><button id="writingStart" class="primary" type="button">開始</button></div></section></div></div>`);const isWriting=which==='writing';overlay.classList.add('game-view');findControl('ballPanel').hidden=isWriting;findControl('writingPanel').hidden=!isWriting;findControl('sheetTitle').textContent=isWriting?'書道で落ち着く':'落ち着く動画';const courseButton=findControl('courseChange'),ballControls=findControl('ballControls');courseButton.hidden=isWriting;let courseOpen=false;courseButton.onclick=()=>{courseOpen=!courseOpen;ballControls.hidden=!courseOpen;const ja=courseOpen?'変更終了':'コース変更';courseButton.textContent=ja;courseButton.setAttribute('aria-expanded',String(courseOpen));requestAnimationFrame(resize)};ballControls.hidden=true;findControl('gameBack').onclick=close;const feelClose=findControl('closeBtn');feelClose.textContent='戻る';feelClose.setAttribute('aria-label','戻る');feelClose.classList.add('close-back');const canvas=findControl('sandCanvas'),stage=canvas.parentElement,ctx=canvas.getContext('2d'),buildingCanvas=findControl('buildingCanvas'),buildingStage=buildingCanvas.parentElement,bctx=buildingCanvas.getContext('2d'),sandStage=findControl('sandStage'),writingCanvasView=findControl('writingCanvasView'),writingSettingsPanel=findControl('writingSettingsPanel'),samplePreviewText=findControl('samplePreviewText');let sampleText='大丈夫',sampleChanged=false;let drawing=false,pointerId=null,lastPoint=null,theme='ink',themeLoaded=false;
  // Canvas sizing.
- function resize(){const old=document.createElement('canvas');old.width=canvas.width;old.height=canvas.height;if(old.width)old.getContext('2d').drawImage(canvas,0,0);const dpr=Math.min(2,window.devicePixelRatio||1),w=stage.clientWidth,h=stage.clientHeight,bw=buildingStage.clientWidth,bh=buildingStage.clientHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(old.width)ctx.drawImage(old,0,0,old.width,old.height,0,0,w,h);buildingCanvas.width=Math.round(bw*dpr);buildingCanvas.height=Math.round(bh*dpr);bctx.setTransform(dpr,0,0,dpr,0,0)}resize();resizeHandler=resize;window.addEventListener('resize',resizeHandler,{passive:true});
+ function resize(){const old=document.createElement('canvas');old.width=canvas.width;old.height=canvas.height;if(old.width)old.getContext('2d').drawImage(canvas,0,0);const dpr=Math.min(2,window.devicePixelRatio||1),w=stage.clientWidth,h=stage.clientHeight,bw=buildingStage.clientWidth,bh=buildingStage.clientHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(old.width)ctx.drawImage(old,0,0,old.width,old.height,0,0,w,h);buildingCanvas.width=Math.round(bw*dpr);buildingCanvas.height=Math.round(bh*dpr);bctx.setTransform(dpr,0,0,dpr,0,0)}resize();window.addEventListener('resize',resize,{passive:true});
+ corner.cleanup=()=>{
+  cancelAnimationFrame(buildingRaf);
+  clearInterval(vibeTimer);
+  clearTimeout(sandSaveTimer);
+  window.removeEventListener('resize',resize);
+  sandFlush?.();
+ };
+
  // The writing screen opens directly; settings overlay leaves the canvas mounted and intact.
- function closeWritingSettings(){writingSettingsPanel.hidden=true;writingCanvasView.hidden=false;requestAnimationFrame(resize)}document.getElementById('writingSettingsBtn').onclick=()=>{writingCanvasView.hidden=false;writingSettingsPanel.hidden=false};document.getElementById('writingSettingsBack').onclick=closeWritingSettings;document.getElementById('writingStart').onclick=closeWritingSettings;document.getElementById('samplePreview').onclick=()=>{
+ function closeWritingSettings(){writingSettingsPanel.hidden=true;writingCanvasView.hidden=false;requestAnimationFrame(resize)}findControl('writingSettingsBtn').onclick=()=>{writingCanvasView.hidden=false;writingSettingsPanel.hidden=false};findControl('writingSettingsBack').onclick=closeWritingSettings;findControl('writingStart').onclick=closeWritingSettings;findControl('samplePreview').onclick=()=>{
  const value=prompt(tr('お手本の文字を入力'),sampleText);
  if(value===null)return;
  sampleChanged=true;
@@ -1098,21 +1206,21 @@ function startFeel(which='ball'){show(`<div class="feel-root"><div class="feel-h
 };
 get('calligraphySample').then(value=>{
  if(value&&!sampleChanged){sampleText=value;samplePreviewText.textContent=value}
-});document.getElementById('writingSettingsBtn').hidden=!isWriting;writingExit=null;
+});findControl('writingSettingsBtn').hidden=!isWriting;
  // Ball animation and editable floor gaps.
  const levelCount=7,slowFactor=1.3,sizeDefs={large:{label:'大',radius:1.42,speed:.78},medium:{label:'中',radius:1,speed:1},small:{label:'小',radius:.7,speed:1.28}},sizeOrder=['large','medium','small'],orangeBallColor=['#ffb04a','#d76c22'],ballPalette=[['#dca0a2','#8e5964'],['#9ec3b4','#537d6d'],['#9eb9d3','#566f91'],['#e7d99c','#85713d'],['#c8acd9','#765b91'],['#aab8d0','#687794'],['#9fc8c8','#4f7779']];let ballCount=3,balls=[],floorErasures=Array.from({length:levelCount},()=>[]),obstacles=[],activeObstacle=-1,eraseMode=false,erasePointer=null,lastErasePoint=null,dragPointer=null,obstacleGesture=null,lastFrame=0;
- const eraseBtn=document.getElementById('eraseFloorBtn'),restoreBtn=document.getElementById('restoreFloorBtn');
+ const eraseBtn=findControl('eraseFloorBtn'),restoreBtn=findControl('restoreFloorBtn');
  function gameGeometry(){const w=buildingStage.clientWidth,h=buildingStage.clientHeight,left=w*.085,right=w*.915,top=h*.075,bottom=h*.925,row=(bottom-top)/levelCount,baseR=Math.max(8,Math.min(15,Math.min(w,h)*.03)),hole=Math.max(baseR*3.5,34);return{w,h,left,right,top,bottom,row,baseR,hole,leftHole:left+hole*.5,rightHole:right-hole*.5}}
  function baseGap(floor,g){const side=floor===levelCount-1||floor%2===0?'right':'left';return side==='right'?[g.right-g.hole,g.right]:[g.left,g.left+g.hole]}
  function gapsForFloor(floor,g){return[baseGap(floor,g),...floorErasures[floor]].sort((a,b)=>a[0]-b[0])}
  function inGap(floor,x,r,g){return gapsForFloor(floor,g).some(([a,b])=>x-r>=a&&x+r<=b)}
  function setEraseMode(on){eraseMode=on;eraseBtn.classList.toggle('active',on);eraseBtn.setAttribute('aria-pressed',String(on));buildingCanvas.style.cursor=on?'crosshair':(activeObstacle>=0?'grab':'default')}
  eraseBtn.onclick=()=>setEraseMode(!eraseMode);restoreBtn.onclick=()=>{floorErasures=Array.from({length:levelCount},()=>[])};
- const selectedLabel=document.getElementById('obstacleSelected'),deleteObstacleBtn=document.getElementById('deleteObstacle');
+ const selectedLabel=findControl('obstacleSelected'),deleteObstacleBtn=findControl('deleteObstacle');
  function obstacleName(o){return o?.kind==='rod'?'棒':o?.kind==='disk'?'円盤':o?.kind==='tire'?'タイヤ':'障害物'}
- function updateObstacleControls(){const o=obstacles[activeObstacle];selectedLabel.textContent=o?obstacleName(o)+'を選択中・指で移動':'追加後、指で移動';deleteObstacleBtn.disabled=!o;document.querySelectorAll('[data-add-obstacle]').forEach(b=>b.classList.toggle('active',o&&b.dataset.addObstacle===o.kind));buildingCanvas.style.cursor=eraseMode?'crosshair':(o?'grab':'default')}
- document.querySelectorAll('[data-add-obstacle]').forEach(button=>button.onclick=()=>{const g=gameGeometry(),n=obstacles.length,kind=button.dataset.addObstacle;setEraseMode(false);obstacles.push({kind,x:Math.max(.18,Math.min(.82,.5+((n%3)-1)*.13)),y:Math.max(.16,Math.min(.78,.39+(n%4)*.09)),angle:0});activeObstacle=obstacles.length-1;updateObstacleControls()});
- deleteObstacleBtn.onclick=()=>{if(activeObstacle<0)return;obstacles.splice(activeObstacle,1);activeObstacle=obstacles.length-1;updateObstacleControls()};document.getElementById('clearObstacles').onclick=()=>{obstacles=[];activeObstacle=-1;updateObstacleControls()};
+ function updateObstacleControls(){const o=obstacles[activeObstacle];selectedLabel.textContent=o?obstacleName(o)+'を選択中・指で移動':'追加後、指で移動';deleteObstacleBtn.disabled=!o;corner.content.querySelectorAll('[data-add-obstacle]').forEach(b=>b.classList.toggle('active',o&&b.dataset.addObstacle===o.kind));buildingCanvas.style.cursor=eraseMode?'crosshair':(o?'grab':'default')}
+ corner.content.querySelectorAll('[data-add-obstacle]').forEach(button=>button.onclick=()=>{const g=gameGeometry(),n=obstacles.length,kind=button.dataset.addObstacle;setEraseMode(false);obstacles.push({kind,x:Math.max(.18,Math.min(.82,.5+((n%3)-1)*.13)),y:Math.max(.16,Math.min(.78,.39+(n%4)*.09)),angle:0});activeObstacle=obstacles.length-1;updateObstacleControls()});
+ deleteObstacleBtn.onclick=()=>{if(activeObstacle<0)return;obstacles.splice(activeObstacle,1);activeObstacle=obstacles.length-1;updateObstacleControls()};findControl('clearObstacles').onclick=()=>{obstacles=[];activeObstacle=-1;updateObstacleControls()};
  function eraseAt(x,y){const g=gameGeometry();if(!g.w||!g.h)return;let floor=-1,best=Infinity;for(let i=0;i<levelCount;i++){const d=Math.abs(y-(g.top+(i+1)*g.row));if(d<best){best=d;floor=i}}if(best>Math.max(18,g.row*.24))return;const cut=Math.max(64,g.baseR*5.4),a=Math.max(g.left,Math.min(g.right,x-cut/2)),b=Math.max(g.left,Math.min(g.right,x+cut/2));if(b-a<8)return;floorErasures[floor].push([a,b]);floorErasures[floor].sort((u,v)=>u[0]-v[0]);const merged=[];for(const span of floorErasures[floor]){const prev=merged[merged.length-1];if(prev&&span[0]<=prev[1]+2)prev[1]=Math.max(prev[1],span[1]);else merged.push(span.slice())}floorErasures[floor]=merged}
  function obstacleHit(o,x,y,g){const ox=o.x*g.w,oy=o.y*g.h;if(o.kind==='rod'){const len=g.w*.24,ax=ox-Math.cos(o.angle)*len/2,ay=oy-Math.sin(o.angle)*len/2,bx=ox+Math.cos(o.angle)*len/2,by=oy+Math.sin(o.angle)*len/2,dx=bx-ax,dy=by-ay,t=Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(x-(ax+t*dx),y-(ay+t*dy))<28}const radius=g.baseR*(o.kind==='tire'?3.2:2.6);return Math.hypot(x-ox,y-oy)<radius+26}
  buildingCanvas.onpointerdown=e=>{e.preventDefault();const rect=buildingCanvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;if(eraseMode){erasePointer=e.pointerId;lastErasePoint={x,y};buildingCanvas.setPointerCapture(e.pointerId);eraseAt(x,y);return}let hit=-1;for(let i=obstacles.length-1;i>=0;i--)if(obstacleHit(obstacles[i],x,y,gameGeometry())){hit=i;break}if(hit>=0){activeObstacle=hit;dragPointer=e.pointerId;
@@ -1138,21 +1246,98 @@ get('calligraphySample').then(value=>{
   }
   dragPointer=null;obstacleGesture=null;
  }};buildingCanvas.onpointerup=endErase;buildingCanvas.onpointercancel=endErase;updateObstacleControls();
- function renderBallControls(){document.querySelectorAll('#ballCountOptions button').forEach(b=>{const active=Number(b.dataset.count)===ballCount;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});const box=document.getElementById('ballSizeControls');box.innerHTML='';for(let i=0;i<ballCount;i++){const b=document.createElement('button');b.type='button';b.dataset.ball=String(i);b.textContent=balls[i].special?'ボール'+(i+1)+'：特大・オレンジ':'ボール'+(i+1)+'：'+sizeDefs[balls[i].size].label;b.setAttribute('aria-label',balls[i].special?'約3回に1回、天井から落ちる特大オレンジボール':'ボール'+(i+1)+'の大きさ。押すと次の大きさに変わります');b.disabled=Boolean(balls[i].special);if(!balls[i].special)b.onclick=()=>{const item=balls[i],ix=sizeOrder.indexOf(item.size);item.size=sizeOrder[(ix+1)%sizeOrder.length]};box.appendChild(b)}}
+ function renderBallControls(){corner.content.querySelectorAll('#ballCountOptions button').forEach(b=>{const active=Number(b.dataset.count)===ballCount;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});const box=findControl('ballSizeControls');box.innerHTML='';for(let i=0;i<ballCount;i++){const b=document.createElement('button');b.type='button';b.dataset.ball=String(i);b.textContent=balls[i].special?'ボール'+(i+1)+'：特大・オレンジ':'ボール'+(i+1)+'：'+sizeDefs[balls[i].size].label;b.setAttribute('aria-label',balls[i].special?'約3回に1回、天井から落ちる特大オレンジボール':'ボール'+(i+1)+'の大きさ。押すと次の大きさに変わります');b.disabled=Boolean(balls[i].special);if(!balls[i].special)b.onclick=()=>{const item=balls[i],ix=sizeOrder.indexOf(item.size);item.size=sizeOrder[(ix+1)%sizeOrder.length]};box.appendChild(b)}}
  function initializeMotion(ball,index){const g=gameGeometry(),floor=index===0?0:(index+Math.floor(Math.random()*(levelCount-1)))%(levelCount-1),dir=floor%2===0?1:-1,span=g.rightHole-g.leftHole,x=g.leftHole+Math.random()*span;if(ball.special){ball.motion={state:'entry',floor:0,x:g.leftHole,y:g.top-g.baseR*1.42*1.18,vy:0,dir:1,spin:0,bounceStart:0,bounceCount:0,fallFloor:0};return}ball.motion={state:'roll',floor,x,y:g.top+(floor+1)*g.row-(g.baseR*sizeDefs[ball.size].radius),vy:0,dir,spin:0,bounceStart:0,bounceCount:0,fallFloor:floor+1}}
  function randomizeBallSet(){if(ballCount===1){balls=[{size:sizeOrder[Math.floor(Math.random()*sizeOrder.length)],color:ballPalette[Math.floor(Math.random()*ballPalette.length)]}]}else{const special={size:'large',special:true,color:orangeBallColor};const others=Array.from({length:ballCount-1},(_,i)=>({size:sizeOrder[Math.floor(Math.random()*sizeOrder.length)],color:ballPalette[i]}));balls=[special,...others]}balls.forEach((ball,i)=>initializeMotion(ball,i));renderBallControls()}
- document.querySelectorAll('#ballCountOptions button').forEach(b=>b.onclick=()=>{ballCount=Number(b.dataset.count);randomizeBallSet()});document.getElementById('randomizeBalls').onclick=randomizeBallSet;randomizeBallSet();
+ corner.content.querySelectorAll('#ballCountOptions button').forEach(b=>b.onclick=()=>{ballCount=Number(b.dataset.count);randomizeBallSet()});findControl('randomizeBalls').onclick=randomizeBallSet;randomizeBallSet();
  function startFall(ball,g,x,floor){const m=ball.motion,r=g.baseR*sizeDefs[ball.size].radius*(ball.special?1.18:1);m.state='fall';m.x=x;m.floor=floor;m.y=g.top+(floor+1)*g.row-r;m.vx=0;m.vy=0;m.fallFloor=floor+1}
  function bounceVelocity(m,nx,ny){const dot=m.vx*nx+m.vy*ny;if(dot<0){const e=.78;m.vx-=(1+e)*dot*nx;m.vy-=(1+e)*dot*ny;m.vx*=.985;m.vy*=.985} }
  function collideWithObstacle(o,m,g,r){const ox=o.x*g.w,oy=o.y*g.h;let nx=0,ny=0,penetration=0;if(o.kind==='rod'){const len=g.w*.24,thick=Math.max(7,g.baseR*.48),ux=Math.cos(o.angle),uy=Math.sin(o.angle),ax=ox-ux*len/2,ay=oy-uy*len/2,dx=ux*len,dy=uy*len,t=Math.max(0,Math.min(1,((m.x-ax)*dx+(m.y-ay)*dy)/(len*len||1))),qx=ax+dx*t,qy=ay+dy*t,vx=m.x-qx,vy=m.y-qy,d=Math.hypot(vx,vy),limit=r+thick/2;if(d>=limit)return false;if(d>1){nx=vx/d;ny=vy/d}else{nx=-uy;ny=ux}penetration=limit-d;m.x+=nx*(penetration+.2);m.y+=ny*(penetration+.2)}else if(o.kind==='disk'){const d=Math.hypot(m.x-ox,m.y-oy),limit=g.baseR*2.65+r;if(d>=limit)return false;if(d>1){nx=(m.x-ox)/d;ny=(m.y-oy)/d}else{nx=0;ny=-1}penetration=limit-d;m.x+=nx*(penetration+.2);m.y+=ny*(penetration+.2)}else{const d=Math.hypot(m.x-ox,m.y-oy),thick=Math.max(8,g.baseR*.62),ring=g.baseR*3.2,inner=ring-thick/2,outer=ring+thick/2,inside=d<ring;const limit=inside?inner-r:outer+r,overlap=inside?d>limit:d<limit;if(!overlap)return false;if(d>1){nx=(m.x-ox)/d*(inside?-1:1);ny=(m.y-oy)/d*(inside?-1:1)}else{nx=0;ny=-1}penetration=inside?d-limit:limit-d;m.x+=nx*(penetration+.2);m.y+=ny*(penetration+.2)}bounceVelocity(m,nx,ny);return true}
  function resolveObstacles(m,g,r){let hit=false;for(let pass=0;pass<2;pass++)for(const o of obstacles)if(collideWithObstacle(o,m,g,r))hit=true;return hit}
- function moveFallingBall(ball,dt,g){const m=ball.motion,r=g.baseR*sizeDefs[ball.size].radius*(ball.special?1.18:1),oldY=m.y;m.vy+=g.row*5.2*dt;m.x+=(m.vx||0)*dt;m.y+=m.vy*dt;if(m.x-r<g.left){m.x=g.left+r;m.vx=Math.abs(m.vx||0)*.68}if(m.x+r>g.right){m.x=g.right-r;m.vx=-Math.abs(m.vx||0)*.68}if(m.y-r<g.top&&m.x>g.left+g.hole){m.y=g.top+r;m.vy=Math.abs(m.vy)*.65}resolveObstacles(m,g,r);while(m.fallFloor<levelCount){const landingY=g.top+(m.fallFloor+1)*g.row-r;if(oldY<=landingY&&m.y>=landingY){if(inGap(m.fallFloor,m.x,r*.58,g)){m.floor=m.fallFloor;m.fallFloor++;continue}m.y=landingY;m.floor=m.fallFloor;m.state='bounce';m.bounceStart=performance.now();m.bounceCount=0;m.vx=0;m.vy=0;return}break}if(m.fallFloor>=levelCount&&m.y>g.bottom-r){m.state='entry';m.y=g.top-r;m.x=g.leftHole;m.vx=0;m.vy=0;m.floor=0;m.fallFloor=0}}
- function nextGapOnPath(floor,from,to,dir,g){const candidates=gapsForFloor(floor,g).map(([a,b])=>({a,b,x:dir>0?a:b})).filter(o=>dir>0?(o.x>=from&&o.x<=to):(o.x<=from&&o.x>=to)).sort((a,b)=>dir>0?a.x-b.x:b.x-a.x);return candidates[0]||null}
- function advanceBall(ball,dt,g,now){const speedFactor=ball.size==='large'?1.5:1;dt*=speedFactor;const m=ball.motion,def=sizeDefs[ball.size],r=g.baseR*def.radius*(ball.special?1.18:1),rollSpeed=(g.rightHole-g.leftHole)/(2.65*slowFactor)*def.speed/(ball.special?3:1);if(m.state==='roll'){const old=m.x,next=old+m.dir*rollSpeed*dt,gap=nextGapOnPath(m.floor,old,next,m.dir,g);if(gap){m.x=gap.x;m.y=g.top+(m.floor+1)*g.row-r;startFall(ball,g,m.x,m.floor)}else{const edge=m.dir>0?g.rightHole:g.leftHole;m.x=m.dir>0?Math.min(next,edge):Math.max(next,edge);m.y=g.top+(m.floor+1)*g.row-r;m.spin+=m.dir*rollSpeed*dt/Math.max(1,r);m.vx=m.dir*rollSpeed;m.vy=0;if(resolveObstacles(m,g,r)){m.vx*=.72;m.vy*=.72;if(Math.abs(m.vy)>rollSpeed*.22){m.state='fall';m.fallFloor=m.vy<0?m.floor:m.floor+1;m.y=Math.min(m.y,g.top+(m.floor+1)*g.row-r-.5)}else{m.dir=m.vx<0?-1:1;m.vx=0;m.vy=0;m.x=Math.max(g.leftHole+r,Math.min(g.rightHole-r,m.x))}}else if((m.dir>0&&m.x>=edge)||(m.dir<0&&m.x<=edge))startFall(ball,g,edge,m.floor)}}else if(m.state==='fall'||m.state==='entry'){if(m.state==='entry'){m.floor=-1;m.fallFloor=0}moveFallingBall(ball,dt,g);if(m.state==='entry'&&m.y>=g.top+g.row-r){if(inGap(0,m.x,r*.58,g)){m.floor=0;m.fallFloor=1;m.state='fall'}else{m.y=g.top+g.row-r;m.floor=0;m.state='roll';m.dir=1;m.x=g.leftHole;m.vx=0;m.vy=0}}}else if(m.state==='bounce'){const elapsed=(now-m.bounceStart)/1000,duration=.52*slowFactor/speedFactor,progress=Math.min(1,elapsed/duration),lift=progress<.5?Math.sin(progress*Math.PI*2)*g.row*.14:Math.sin((progress-.5)*Math.PI*2)*g.row*.065;m.y=g.top+(m.floor+1)*g.row-r-lift;m.spin+=dt*2*m.dir;if(progress>=1){m.bounceCount++;if(m.bounceCount>=2){m.state='roll';m.dir=m.floor%2===0?1:-1}else{m.bounceStart=now}}}}
+ function moveFallingBall(ball,dt,g){const m=ball.motion,r=g.baseR*sizeDefs[ball.size].radius*(ball.special?1.18:1);m.vy+=g.row*5.2*dt;m.x+=(m.vx||0)*dt;m.y+=m.vy*dt;if(m.x-r<g.left){m.x=g.left+r;m.vx=Math.abs(m.vx||0)*.68}if(m.x+r>g.right){m.x=g.right-r;m.vx=-Math.abs(m.vx||0)*.68}if(m.y-r<g.top&&m.x>g.left+g.hole){m.y=g.top+r;m.vy=Math.abs(m.vy)*.65}resolveObstacles(m,g,r);while(m.fallFloor<levelCount){const landingY=g.top+(m.fallFloor+1)*g.row-r;if(m.y>=landingY){if(inGap(m.fallFloor,m.x,r*.58,g)){m.floor=m.fallFloor;m.fallFloor++;continue}m.y=landingY;m.floor=m.fallFloor;m.state='bounce';m.bounceStart=performance.now();m.bounceCount=0;m.vx=0;m.vy=0;return}break}if(m.fallFloor>=levelCount&&m.y>g.bottom-r){m.state='entry';m.y=g.top-r;m.x=g.leftHole;m.vx=0;m.vy=0;m.floor=0;m.fallFloor=0;m.blocker=null;m.retry=0}}
+ function obstacleSurface(o,x,g,r){
+  const ox=o.x*g.w,oy=o.y*g.h;
+  function circleTop(cx,cy,radius){
+   const dx=x-cx;
+   return Math.abs(dx)<=radius?cy-Math.sqrt(Math.max(0,radius**2-dx**2)):Infinity;
+  }
+  if(o.kind!=='rod'){
+   const radius=o.kind==='disk'?g.baseR*2.65:g.baseR*3.2+Math.max(8,g.baseR*.62)/2;
+   return circleTop(ox,oy,radius+r);
+  }
+  const ux=Math.cos(o.angle),uy=Math.sin(o.angle),half=g.w*.12;
+  const radius=r+Math.max(7,g.baseR*.48)/2;
+  const ax=ox-ux*half,ay=oy-uy*half,bx=ox+ux*half,by=oy+uy*half;
+  const top=Math.min(circleTop(ax,ay,radius),circleTop(bx,by,radius));
+  if(Math.abs(ux)<.0001)return top;
+  const outward=Math.sign(ux);
+  const along=(x-ox-outward*uy*radius)/ux;
+  return Math.abs(along)<=half?Math.min(top,oy+uy*along-Math.abs(ux)*radius):top;
+ }
+ function rollSupport(x,floor,g,r){
+  const floorY=g.top+(floor+1)*g.row-r;
+  let y=floorY,obstacle=null;
+  for(const candidate of obstacles){
+   const halfHeight=candidate.kind==='rod'
+    ?Math.abs(Math.sin(candidate.angle))*g.w*.12+Math.max(7,g.baseR*.48)/2
+    :g.baseR*3.2+Math.max(8,g.baseR*.62)/2;
+   if(Math.abs(candidate.y*g.h-floorY)>g.row+halfHeight+r)continue;
+   const top=obstacleSurface(candidate,x,g,r);
+   if(top<y&&candidate.y*g.h+halfHeight+r>=floorY-g.row){
+    y=top;
+    obstacle=candidate;
+   }
+  }
+  return {y,obstacle};
+ }
+ function rollBall(ball,dt,g,r,rollSpeed){
+  const m=ball.motion;
+  const natural=m.floor===levelCount-1||m.floor%2===0?1:-1;
+  const floorY=g.top+(m.floor+1)*g.row-r;
+  const ceiling=m.floor===0?g.top+r:g.top+m.floor*g.row+r;
+  const step=rollSpeed*dt;
+  m.retry=Math.max(0,(m.retry||0)-dt);
+  if(m.blocker&&!obstacles.includes(m.blocker)){m.blocker=null;m.dir=natural}
+  if(m.dir!==natural&&m.retry===0){
+   const ahead=rollSupport(m.x+natural*step,m.floor,g,r);
+   if(ahead.y>=Math.min(floorY,ceiling)&&m.y-ahead.y<=Math.max(r*.38,step*2.5)){
+    m.dir=natural;
+    m.blocker=null;
+   }
+  }
+  const x=Math.max(g.leftHole,Math.min(g.rightHole,m.x+m.dir*step));
+  const support=rollSupport(x,m.floor,g,r);
+  const climb=m.y-support.y;
+  const blocked=support.y<Math.min(floorY,ceiling)||climb>Math.max(r*.38,step*2.5);
+  if(blocked||x===m.x){
+   if(blocked)m.blocker=support.obstacle;
+   m.dir*=-1;
+   m.retry=.45;
+  }else{
+   m.spin+=(x-m.x)/Math.max(1,r);
+   m.x=x;
+   m.y=support.y;
+   if(!support.obstacle&&inGap(m.floor,x,Math.min(r*.58,g.hole*.45),g)){
+    startFall(ball,g,x,m.floor);
+   }
+  }
+ }
+ function advanceBall(ball,dt,g,now){
+  const speedFactor=ball.size==='large'?1.5*1.3:1;
+  dt*=speedFactor;
+  const m=ball.motion,def=sizeDefs[ball.size];
+  const r=g.baseR*def.radius*(ball.special?1.18:1);
+  const rollSpeed=(g.rightHole-g.leftHole)/(2.65*slowFactor)*def.speed/(ball.special?3:1);
+  if(m.state==='roll')rollBall(ball,dt,g,r,rollSpeed);
+  else if(m.state==='fall'||m.state==='entry'){
+   if(m.state==='entry'){m.floor=-1;m.fallFloor=0}
+   moveFallingBall(ball,dt,g);
+  }
+  else if(m.state==='bounce'){const elapsed=(now-m.bounceStart)/1000,duration=.52*slowFactor/speedFactor,progress=Math.min(1,elapsed/duration),lift=progress<.5?Math.sin(progress*Math.PI*2)*g.row*.14:Math.sin((progress-.5)*Math.PI*2)*g.row*.065;m.y=g.top+(m.floor+1)*g.row-r-lift;m.spin+=dt*2*m.dir;if(progress>=1){m.bounceCount++;if(m.bounceCount>=2){m.state='roll';m.dir=m.floor===levelCount-1||m.floor%2===0?1:-1;m.blocker=null;m.retry=0}else{m.bounceStart=now}}}}
  function drawBuilding(now){const g=gameGeometry();if(!g.w||!g.h)return;const{w,h,left,right,top,bottom,row,baseR,hole,leftHole,rightHole}=g;bctx.clearRect(0,0,w,h);const cx=(left+right)/2,cy=(top+bottom)/2;bctx.save();bctx.translate(cx,cy);bctx.rotate(Math.sin(now/1700)*.004);bctx.translate(-cx,-cy);bctx.lineCap='round';bctx.lineJoin='round';bctx.strokeStyle='#766a74';bctx.lineWidth=Math.max(3,w*.008);bctx.fillStyle='rgba(255,255,255,.22)';bctx.shadowColor='rgba(91,69,87,.13)';bctx.shadowBlur=14;bctx.beginPath();bctx.roundRect(left,top,right-left,bottom-top,Math.min(18,w*.035));bctx.fill();bctx.shadowBlur=0;bctx.beginPath();bctx.moveTo(left,top+12);bctx.lineTo(left,bottom-12);bctx.moveTo(right,top+12);bctx.lineTo(right,bottom-12);bctx.moveTo(left+hole,top);bctx.lineTo(right,top);bctx.stroke();for(let floor=0;floor<levelCount;floor++){const yy=top+(floor+1)*row,spans=gapsForFloor(floor,g);let cursor=left;for(const[a,b]of spans){if(a>cursor){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(a,yy);bctx.stroke()}cursor=Math.max(cursor,b)}if(cursor<right){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(right,yy);bctx.stroke()}}for(let i=0;i<obstacles.length;i++){const o=obstacles[i],ox=o.x*w,oy=o.y*h,selected=i===activeObstacle;bctx.save();bctx.translate(ox,oy);bctx.rotate(o.kind==='rod'?o.angle:0);bctx.shadowColor=selected?'rgba(205,112,151,.38)':'rgba(61,73,69,.2)';bctx.shadowBlur=selected?12:6;if(o.kind==='rod'){const len=w*.24;bctx.lineCap='round';bctx.strokeStyle=selected?'#b96f8d':'#6b7770';bctx.lineWidth=Math.max(7,baseR*.48);bctx.beginPath();bctx.moveTo(-len/2,0);bctx.lineTo(len/2,0);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff99';bctx.lineWidth=Math.max(1.5,baseR*.1);bctx.beginPath();bctx.moveTo(-len/2+3,-1);bctx.lineTo(len/2-3,-1);bctx.stroke()}else if(o.kind==='disk'){const rr=baseR*2.65,gr=bctx.createRadialGradient(-rr*.3,-rr*.35,rr*.08,0,0,rr);gr.addColorStop(0,'#fff7e5');gr.addColorStop(.55,selected?'#d9a2b7':'#aebfb5');gr.addColorStop(1,selected?'#a96d85':'#71867b');bctx.fillStyle=gr;bctx.strokeStyle=selected?'#b76f8c':'#65766d';bctx.lineWidth=2;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff88';bctx.lineWidth=1.5;bctx.beginPath();bctx.arc(-rr*.08,-rr*.08,rr*.72,-2.4,-.5);bctx.stroke()}else{const rr=baseR*3.2,thick=Math.max(8,baseR*.62);bctx.strokeStyle=selected?'#8f6377':'#535d5b';bctx.lineWidth=thick;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff70';bctx.lineWidth=Math.max(1,thick*.18);bctx.beginPath();bctx.arc(0,0,rr,Math.PI*1.05,Math.PI*1.75);bctx.stroke();bctx.fillStyle='#ffffff55';bctx.beginPath();bctx.arc(0,0,Math.max(2,thick*.17),0,Math.PI*2);bctx.fill()}bctx.restore()}for(const ball of balls.slice(0,ballCount)){const def=sizeDefs[ball.size],r=baseR*def.radius*(ball.special?1.18:1),m=ball.motion;if(!m)continue;const x=m.x,y=m.y;bctx.save();bctx.translate(x,y);bctx.rotate(m.spin);const grad=bctx.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r*1.25);grad.addColorStop(0,'#fffefb');grad.addColorStop(.34,ball.color[0]);grad.addColorStop(1,ball.color[1]);bctx.fillStyle=grad;bctx.strokeStyle=ball.color[1];bctx.lineWidth=Math.max(1.2,r*.09);bctx.beginPath();bctx.arc(0,0,r,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.strokeStyle='rgba(80,70,62,.42)';bctx.lineWidth=Math.max(1.2,r*.08);bctx.beginPath();bctx.arc(0,0,r*.64,-.65,.65);bctx.stroke();bctx.restore()}bctx.restore()}
  function animateBuilding(now){if(!buildingCanvas.isConnected)return;const g=gameGeometry(),dt=lastFrame?Math.min(.05,(now-lastFrame)/1000):.016;lastFrame=now;balls.slice(0,ballCount).forEach(ball=>advanceBall(ball,dt,g,now));drawBuilding(now);buildingRaf=requestAnimationFrame(animateBuilding)}if(!isWriting)buildingRaf=requestAnimationFrame(animateBuilding);
  // Drawing and calligraphy.
- async function saveCanvas(){try{await put('sandDrawing_'+theme,canvas.toDataURL('image/png'))}catch{}}sandFlush=saveCanvas;function queueSave(){if(sandSaveTimer)clearTimeout(sandSaveTimer);sandSaveTimer=setTimeout(()=>{sandSaveTimer=null;saveCanvas()},240)}async function loadTheme(t){if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}if(themeLoaded)await saveCanvas();theme=t;themeLoaded=true;stage.classList.toggle('ink-paper',theme==='ink');document.querySelectorAll('.sand-tools [data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);await put('sandTheme',theme);await put('calligraphyTheme1044',theme);const data=await get('sandDrawing_'+theme);if(data){const image=new Image();image.onload=()=>ctx.drawImage(image,0,0,stage.clientWidth,stage.clientHeight);image.src=data}}get('calligraphyTheme1044').then(t=>{if(!themeLoaded)loadTheme(t==='sand'?'sand':'ink')});document.getElementById('sandColor').onclick=()=>loadTheme('sand');document.getElementById('inkColor').onclick=()=>loadTheme('ink');document.getElementById('stampCalligraphy').onclick=async()=>{
+ async function saveCanvas(){try{await put('sandDrawing_'+theme,canvas.toDataURL('image/png'))}catch{}}if(isWriting)sandFlush=saveCanvas;function queueSave(){if(sandSaveTimer)clearTimeout(sandSaveTimer);sandSaveTimer=setTimeout(()=>{sandSaveTimer=null;saveCanvas()},240)}async function loadTheme(t){if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}if(themeLoaded)await saveCanvas();theme=t;themeLoaded=true;stage.classList.toggle('ink-paper',theme==='ink');corner.content.querySelectorAll('.sand-tools [data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);await put('sandTheme',theme);await put('calligraphyTheme1044',theme);const data=await get('sandDrawing_'+theme);if(data){const image=new Image();image.onload=()=>ctx.drawImage(image,0,0,stage.clientWidth,stage.clientHeight);image.src=data}}get('calligraphyTheme1044').then(t=>{if(isWriting&&canvas.isConnected&&!themeLoaded)loadTheme(t==='sand'?'sand':'ink')});findControl('sandColor').onclick=()=>loadTheme('sand');findControl('inkColor').onclick=()=>loadTheme('ink');findControl('stampCalligraphy').onclick=async()=>{
  const text=sampleText,styleAtStart=theme;
  closeWritingSettings();
  await new Promise(requestAnimationFrame);
@@ -1175,31 +1360,35 @@ get('calligraphySample').then(value=>{
  stampVertical(ctx,text,{rows,columns,advance,right:width-margin-size/2,top:margin+size/2});
  ctx.restore();
  saveCanvas();
-};function brushWidth(speed=0){return Math.max(5,Math.min(58,44-speed*34))}canvas.onpointerdown=e=>{e.preventDefault();drawing=true;pointerId=e.pointerId;canvas.setPointerCapture(pointerId);const r=canvas.getBoundingClientRect();lastPoint={x:e.clientX-r.left,y:e.clientY-r.top,width:brushWidth(0),time:e.timeStamp}};canvas.onpointermove=e=>{if(!drawing||e.pointerId!==pointerId)return;e.preventDefault();const r=canvas.getBoundingClientRect(),point={x:e.clientX-r.left,y:e.clientY-r.top,time:e.timeStamp};const elapsed=Math.max(8,point.time-(lastPoint.time||point.time-16)),speed=Math.hypot(point.x-lastPoint.x,point.y-lastPoint.y)/elapsed;point.width=brushWidth(speed);ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle=theme==='ink'?'rgba(20,18,19,.88)':'rgba(102,62,29,.72)';ctx.lineWidth=(lastPoint.width+point.width)/2;ctx.shadowColor=theme==='ink'?'rgba(0,0,0,.18)':'rgba(83,48,22,.38)';ctx.shadowBlur=theme==='ink'?0:3;ctx.stroke();if(theme==='sand'){ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle='rgba(255,239,193,.38)';ctx.lineWidth=Math.max(1,point.width*.13);ctx.stroke()}lastPoint=point;queueSave()};const endDraw=e=>{if(e.pointerId===pointerId){drawing=false;pointerId=null;lastPoint=null;saveCanvas()}};canvas.onpointerup=endDraw;canvas.onpointercancel=endDraw;document.getElementById('clearSand').onclick=async()=>{if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);await del('sandDrawing_'+theme)};if('vibrate'in navigator){navigator.vibrate([70,1800]);vibeTimer=setInterval(()=>navigator.vibrate([70,1800]),1870);document.getElementById('vibeNote').textContent='ボールがゆっくり循環し、振動しています'}if(isWriting)requestAnimationFrame(()=>{if(!overlay.classList.contains('show')||!sandStage.isConnected)return;resize()})}
+};function brushWidth(speed=0){return Math.max(5,Math.min(58,44-speed*34))}canvas.onpointerdown=e=>{e.preventDefault();drawing=true;pointerId=e.pointerId;canvas.setPointerCapture(pointerId);const r=canvas.getBoundingClientRect();lastPoint={x:e.clientX-r.left,y:e.clientY-r.top,width:brushWidth(0),time:e.timeStamp}};canvas.onpointermove=e=>{if(!drawing||e.pointerId!==pointerId)return;e.preventDefault();const r=canvas.getBoundingClientRect(),point={x:e.clientX-r.left,y:e.clientY-r.top,time:e.timeStamp};const elapsed=Math.max(8,point.time-(lastPoint.time||point.time-16)),speed=Math.hypot(point.x-lastPoint.x,point.y-lastPoint.y)/elapsed;point.width=brushWidth(speed);ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle=theme==='ink'?'rgba(20,18,19,.88)':'rgba(102,62,29,.72)';ctx.lineWidth=(lastPoint.width+point.width)/2;ctx.shadowColor=theme==='ink'?'rgba(0,0,0,.18)':'rgba(83,48,22,.38)';ctx.shadowBlur=theme==='ink'?0:3;ctx.stroke();if(theme==='sand'){ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle='rgba(255,239,193,.38)';ctx.lineWidth=Math.max(1,point.width*.13);ctx.stroke()}lastPoint=point;queueSave()};const endDraw=e=>{if(e.pointerId===pointerId){drawing=false;pointerId=null;lastPoint=null;saveCanvas()}};canvas.onpointerup=endDraw;canvas.onpointercancel=endDraw;findControl('clearSand').onclick=async()=>{if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);await del('sandDrawing_'+theme)};if(!isWriting&&'vibrate'in navigator){navigator.vibrate([70,1800]);vibeTimer=setInterval(()=>navigator.vibrate([70,1800]),1870);findControl('vibeNote').textContent='ボールがゆっくり循環し、振動しています'}if(isWriting)requestAnimationFrame(()=>{if(!overlay.classList.contains('show')||!sandStage.isConnected)return;resize()})}
 // YouTube.
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function parseYouTube(raw){try{const u=new URL(raw.trim());if(!['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be','youtube-nocookie.com','www.youtube-nocookie.com'].includes(u.hostname.toLowerCase()))return null;let id='',list=u.searchParams.get('list')||'';if(u.hostname.toLowerCase().includes('youtu.be'))id=u.pathname.split('/').filter(Boolean)[0]||'';else if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else{const m=u.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/);if(m)id=m[1]}if(id&&!/^[\w-]{11}$/.test(id))return null;if(!id&&!list)return null;if(list&&!/^[\w-]+$/.test(list))return null;return {id,list,embed:id?`https://www.youtube-nocookie.com/embed/${id}${list?`?list=${encodeURIComponent(list)}`:''}`:`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(list)}`,external:u.href}}catch{return null}}
 async function openYouTube(){
+ const requestId=viewRequest;
  const items=await loadListenVideos();
+ if(requestId!==viewRequest)return;
  show(`<h2 id="sheetTitle">YouTube動画を変更</h2><div class="yt-steps">変更したい動画の「名前・URLを変更」を押し、新しい動画名とYouTubeリンクを保存します。4つの枠はこの端末のブラウザに保存されます。</div><div class="yt-list" id="ytList"></div><div class="actions"><button class="secondary" id="restoreListenVideos">最初の4本に戻す</button><button class="stop" id="ytClose">戻る</button></div>`);
- const list=document.getElementById('ytList');
+ const list=findControl('ytList');
  items.forEach((item,index)=>{const row=document.createElement('div');row.className='yt-manage-row';row.innerHTML=`<div class="yt-item">${escapeHTML(item.title)}<small>${escapeHTML(item.url)}</small></div><button class="yt-small" type="button">名前・URLを変更</button>`;row.querySelector('button').onclick=()=>registerYouTube(index);list.appendChild(row)});
- document.getElementById('restoreListenVideos').onclick=async()=>{if(!confirm(tr('4つの動画を最初の設定に戻しますか？')))return;await put('listenVideos',DEFAULT_LISTEN_VIDEOS);openYouTube()};
- document.getElementById('ytClose').onclick=openListen;
+ findControl('restoreListenVideos').onclick=async()=>{if(!confirm(tr('4つの動画を最初の設定に戻しますか？')))return;await put('listenVideos',DEFAULT_LISTEN_VIDEOS);openYouTube()};
+ findControl('ytClose').onclick=openListen;
 }
 async function playYouTube(index){
- const items=await loadListenVideos(),item=items[index],parsed=item&&parseYouTube(item.url);if(!parsed)return;
+ const requestId=viewRequest;
+ const items=await loadListenVideos(),item=items[index],parsed=item&&parseYouTube(item.url);
+ if(requestId!==viewRequest)return;if(!parsed)return;
  show(`<h2 id="sheetTitle">${escapeHTML(item.title)}</h2><iframe class="yt-player" id="ytFrame" title="${escapeHTML(item.title)}" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="actions"><button class="secondary" id="ytExternal">YouTubeで開く</button><button class="secondary" id="ytBack">動画一覧へ戻る</button></div><p class="help">自動再生されない場合は、動画の再生マークを押してください。</p>`);
- document.getElementById('ytFrame').src=parsed.embed+(parsed.embed.includes('?')?'&':'?')+'autoplay=1&playsinline=1';
- document.getElementById('ytExternal').onclick=()=>{const frame=document.getElementById('ytFrame');if(frame)frame.src='about:blank';window.location.assign(parsed.external)};
- document.getElementById('ytBack').onclick=openListen;
+ findControl('ytFrame').src=parsed.embed+(parsed.embed.includes('?')?'&':'?')+'autoplay=1&playsinline=1';
+ findControl('ytExternal').onclick=()=>{const frame=findControl('ytFrame');if(frame)frame.src='about:blank';window.location.assign(parsed.external)};
+ findControl('ytBack').onclick=openListen;
 }
 async function registerYouTube(index){
  const items=await loadListenVideos(),old=items[index];if(!old)return;
  show(`<h2 id="sheetTitle">動画${index+1}の名前・URLを変更</h2><div class="yt-steps">YouTubeで動画を開き「共有」→「リンクをコピー」してから貼り付けます。</div><div class="file-row"><label for="ytName">① 動画の名前</label><input id="ytName" maxlength="60" value="${escapeHTML(old.title)}"></div><div class="file-row"><label for="ytUrl">② YouTubeのリンク</label><div class="paste-line"><input id="ytUrl" inputmode="url" value="${escapeHTML(old.url)}"><button id="ytPaste" type="button">貼り付け</button></div><small>コピーしたURLをここに入れます。</small></div><div class="actions"><button class="primary" id="ytSave">保存する</button><button class="secondary" id="ytCancel">戻る</button></div><div class="status" id="ytStatus"></div>`);
- document.getElementById('ytCancel').onclick=openYouTube;
- document.getElementById('ytPaste').onclick=async()=>{const input=document.getElementById('ytUrl'),status=document.getElementById('ytStatus');try{const text=await navigator.clipboard.readText();if(!text)throw new Error();input.value=text;status.textContent='リンクを貼り付けました'}catch{input.focus();status.textContent='URL欄を長押しして「貼り付け」を選んでください'}};
- document.getElementById('ytSave').onclick=async()=>{const title=document.getElementById('ytName').value.trim(),url=document.getElementById('ytUrl').value.trim(),status=document.getElementById('ytStatus');if(!title){status.textContent='動画の名前を入れてください';return}if(!parseYouTube(url)){status.textContent='有効なYouTubeの動画リンクを入れてください';return}const next=await loadListenVideos();next[index]={title,url};try{await put('listenVideos',next);openYouTube()}catch{status.textContent='保存できませんでした。もう一度お試しください'}};
+ findControl('ytCancel').onclick=openYouTube;
+ findControl('ytPaste').onclick=async()=>{const input=findControl('ytUrl'),status=findControl('ytStatus');try{const text=await navigator.clipboard.readText();if(!text)throw new Error();input.value=text;status.textContent='リンクを貼り付けました'}catch{input.focus();status.textContent='URL欄を長押しして「貼り付け」を選んでください'}};
+ findControl('ytSave').onclick=async()=>{const title=findControl('ytName').value.trim(),url=findControl('ytUrl').value.trim(),status=findControl('ytStatus');if(!title){status.textContent='動画の名前を入れてください';return}if(!parseYouTube(url)){status.textContent='有効なYouTubeの動画リンクを入れてください';return}const next=await loadListenVideos();next[index]={title,url};try{await put('listenVideos',next);openYouTube()}catch{status.textContent='保存できませんでした。もう一度お試しください'}};
 }
 // Research notes.
 const researchEntries=[
@@ -1211,9 +1400,9 @@ const researchEntries=[
 {title:'光色と休息・疲労の実験',meta:'東京大学大学院の建築系研究者ら｜Ko, Lee, Chiang, Koga, Hirate｜日本建築学会環境系論文集, 2011',body:`<p><span class="research-tag">東京大学</span><span class="research-tag">LED照明</span><span class="research-tag">疲労評価</span></p><p>白色蛍光灯下で疲労を誘発した後、色付きLED照明などの環境で休息する実験です。疲労感、心拍、フリッカー値、室内印象を評価し、淡い青色LEDなどで休息・疲労低減に関する結果が報告されました。著者には東京大学のByoung woo Ko、Dong gi Lee、Takaaki Koga、Kotaroh Hirateらが含まれます。</p><p><b>このアプリとの関係：</b>実験は部屋全体の照明環境で行われました。スマホ画面の色変化・色の濃さやパニック発作への効果を直接調べた研究ではありません。アプリの色モードは、画面上の色をゆっくり眺めるための設計上の参考にとどめています。</p><p><a href="https://www.jstage.jst.go.jp/article/aije/76/662/76_662_363/_article/-char/ja" target="_blank" rel="noopener">日本建築学会論文（J-STAGE）</a></p>`},
 {title:'「安心できるものを選ぶ」ことと期待の働き',meta:'このアプリの設計上の考え方｜研究効果の断定ではありません',body:`<p>本人が選んだ音楽、景色、家族の写真は、「自分で選べる」「見慣れていて安心する」という感覚を支える可能性があります。研究の権威や説明を読むことで安心感が強まる人もいるかもしれませんが、本人ごとの差があり、このアプリでプラセボ効果が起きるとは保証できません。</p><p>そこで本アプリでは、大学名や研究結果を隠さず載せる一方、研究対象・方法・限界も併記します。研究が示したことと、このアプリ自体に確認された効果を混同しません。研究紹介は、掲載された方法がパニック発作を治したり、必ず短くしたりするという意味ではありません。</p>`}
 ];
-function researchPage(){show(`<h2 id="sheetTitle">研究資料・出典</h2><div class="research-intro"><b>このページの目的</b><br>音・視覚・触覚・呼吸の関連研究を、大学名と測定結果を含めて紹介します。研究の権威を安心材料にする意図はありますが、研究結果を誇張せず、対象や限界も一緒に示します。</div><div class="research-disclaimer"><b>先に確認：</b>このアプリ自体を使った臨床試験は行っていません。以下の研究は、専用装置・訓練・照明環境などを検証したもので、このアプリで発作が早く収まることや、心拍・発汗が下がることを証明したものではありません。効果には個人差があります。</div><div id="researchList"></div><button class="stop" id="researchClose">閉じる</button>`);const list=document.getElementById('researchList');researchEntries.forEach(entry=>{const d=document.createElement('details');d.className='research-card';d.innerHTML=`<summary>${escapeHTML(entry.title)}<small>${escapeHTML(entry.meta)}</small></summary><div class="research-body">${entry.body}</div>`;list.appendChild(d)});document.getElementById('researchClose').onclick=close}
-async function update(){const p=await loadPhotos();document.getElementById('photoDesc').textContent=p.length?`${p.length}件を表示・スワイプで選択`:'写真・動画を表示・2秒長押しで登録'}
-openDB().then(async()=>{await del('emirinAudio');await loadListenVideos();update()}).catch(()=>{document.getElementById('photoDesc').textContent='保存機能はこのブラウザで使えません'})
+function researchPage(){show(`<h2 id="sheetTitle">研究資料・出典</h2><div class="research-intro"><b>このページの目的</b><br>音・視覚・触覚・呼吸の関連研究を、大学名と測定結果を含めて紹介します。研究の権威を安心材料にする意図はありますが、研究結果を誇張せず、対象や限界も一緒に示します。</div><div class="research-disclaimer"><b>先に確認：</b>このアプリ自体を使った臨床試験は行っていません。以下の研究は、専用装置・訓練・照明環境などを検証したもので、このアプリで発作が早く収まることや、心拍・発汗が下がることを証明したものではありません。効果には個人差があります。</div><div id="researchList"></div><button class="stop" id="researchClose">閉じる</button>`);const list=findControl('researchList');researchEntries.forEach(entry=>{const d=document.createElement('details');d.className='research-card';d.innerHTML=`<summary>${escapeHTML(entry.title)}<small>${escapeHTML(entry.meta)}</small></summary><div class="research-body">${entry.body}</div>`;list.appendChild(d)});findControl('researchClose').onclick=close}
+async function update(){const p=await loadPhotos();findControl('photoDesc').textContent=p.length?`${p.length}件を表示・スワイプで選択`:'写真・動画を表示・2秒長押しで登録'}
+openDB().then(async()=>{await del('emirinAudio');await loadListenVideos();update()}).catch(()=>{findControl('photoDesc').textContent='保存機能はこのブラウザで使えません'})
 })();
 </script>
 </body>
