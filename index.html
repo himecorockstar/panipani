@@ -38,7 +38,7 @@
   <div class="card whowatch-card"><button class="card-main" data-mode="whowatch" type="button"><span class="icon" aria-hidden="true">♥</span><span class="card-copy"><span class="card-title">ふわっち</span><span class="card-desc">ふわっちを開く</span></span></button></div>
  </section>
  <p class="note"><strong>これは玩具です。</strong>診断・治療・診察を行うものではありません。</p>
- <footer class="footer"><small class="app-version">ver. 1.060</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
+ <footer class="footer"><small class="app-version">ver. 1.061</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
 </main>
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><section class="sheet"><button class="close" id="closeBtn" aria-label="閉じる">×</button><div id="sheetContent"></div></section></div>
 <script>
@@ -921,8 +921,12 @@ async function openListen(){
  if(requestId!==viewRequest)return;
  const findControl=show(`<h2 id="sheetTitle">聴く</h2><p>聞きたい動画を選んでください。YouTubeの再生マークが出たら押します。</p><div class="youtube-shortcuts"><button id="youtubeHomeOne" type="button">YouTube</button><button id="youtubeHomeTwo" type="button">YouTube</button></div><div class="sound-grid" id="listenVideoGrid"></div><button class="favorite-music-button" id="favoriteMusicBtn">わたし好みの音楽</button><div class="listen-actions"><button class="secondary" id="editListenVideos">YouTube動画を変更</button><button class="stop" id="listenClose">戻る</button></div><p class="help">YouTubeはインターネット通信を使います。自分の曲はこの端末のブラウザ内に1曲保存します。</p>`);activeCorner.panel.classList.add("listen-view");
  const grid=findControl('listenVideoGrid');
- videos.forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='sound-btn';b.innerHTML=`${escapeHTML(item.title)}<small>YouTubeで再生</small>`;b.onclick=()=>playYouTube(index);grid.appendChild(b)});
- findControl('youtubeHomeOne').onclick=()=>window.location.assign('https://www.youtube.com/');findControl('youtubeHomeTwo').onclick=()=>window.location.assign('https://www.youtube.com/');findControl('favoriteMusicBtn').onclick=openFavoriteMusic;
+ videos.forEach((item,index)=>{const b=document.createElement('button');b.type='button';b.className='sound-btn';b.innerHTML=`${escapeHTML(item.title)}<small>YouTubeで再生</small>`;b.onclick=()=>{
+ const existing=corners.get('listenVideo');
+ const replace=existing?.videoUrl!==item.url;
+ openCorner('listenVideo',()=>playYouTube(index),replace);
+ };grid.appendChild(b)});
+ findControl('youtubeHomeOne').onclick=()=>window.location.assign('https://www.youtube.com/');findControl('youtubeHomeTwo').onclick=()=>window.location.assign('https://www.youtube.com/');findControl('favoriteMusicBtn').onclick=()=>openCorner('favoriteMusic',openFavoriteMusic);
  findControl('editListenVideos').onclick=openYouTube;
  findControl('listenClose').onclick=close;
 }
@@ -944,11 +948,11 @@ async function openFavoriteMusic(){
  refresh();
  findControl('replaceFavoriteMusic').onclick=registerFavoriteMusic;
  findControl('deleteFavoriteMusic').onclick=async()=>{if(!confirm(tr('登録した曲を削除しますか？')))return;const requestId=viewRequest;await del('favoriteMusic');if(requestId===viewRequest)registerFavoriteMusic()};
- findControl('favoriteMusicBack').onclick=openListen;
+ findControl('favoriteMusicBack').onclick=()=>openCorner('listen',openListen);
 }
 function registerFavoriteMusic(){
  const findControl=show(`<h2 id="sheetTitle">わたし好みの音楽</h2><p>この端末にある音楽を1曲選んでください。</p><div class="file-row"><label for="favoriteMusicFile">音楽ファイルを選ぶ</label><input id="favoriteMusicFile" type="file" accept="audio/*"><small>選んだ曲はこの端末のブラウザ内に保存されます。</small><div class="status" id="favoriteMusicStatus"></div></div><button class="stop" id="favoriteMusicBack">戻る</button>`);
- findControl('favoriteMusicBack').onclick=openListen;
+ findControl('favoriteMusicBack').onclick=()=>openCorner('listen',openListen);
  findControl('favoriteMusicFile').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;const status=findControl('favoriteMusicStatus');status.textContent='曲を保存しています…';try{const requestId=viewRequest;await put('favoriteMusic',{blob:file,name:file.name});if(requestId===viewRequest)openFavoriteMusic()}catch{status.textContent='保存できませんでした。空き容量を確認してください。'}};
 }
 // Photos.
@@ -1382,7 +1386,46 @@ get('calligraphySample').then(value=>{
  function drawBuilding(now){const g=gameGeometry();if(!g.w||!g.h)return;const{w,h,left,right,top,bottom,row,baseR,hole,leftHole,rightHole}=g;bctx.clearRect(0,0,w,h);const cx=(left+right)/2,cy=(top+bottom)/2;bctx.save();bctx.translate(cx,cy);bctx.rotate(Math.sin(now/1700)*.004);bctx.translate(-cx,-cy);bctx.lineCap='round';bctx.lineJoin='round';bctx.strokeStyle='#766a74';bctx.lineWidth=Math.max(3,w*.008);bctx.fillStyle='rgba(255,255,255,.22)';bctx.shadowColor='rgba(91,69,87,.13)';bctx.shadowBlur=14;bctx.beginPath();bctx.roundRect(left,top,right-left,bottom-top,Math.min(18,w*.035));bctx.fill();bctx.shadowBlur=0;bctx.beginPath();bctx.moveTo(left,top+12);bctx.lineTo(left,bottom-12);bctx.moveTo(right,top+12);bctx.lineTo(right,bottom-12);bctx.moveTo(left+hole,top);bctx.lineTo(right,top);bctx.stroke();for(let floor=0;floor<levelCount;floor++){const yy=top+(floor+1)*row,spans=gapsForFloor(floor,g);let cursor=left;for(const[a,b]of spans){if(a>cursor){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(a,yy);bctx.stroke()}cursor=Math.max(cursor,b)}if(cursor<right){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(right,yy);bctx.stroke()}}for(let i=0;i<obstacles.length;i++){const o=obstacles[i],ox=o.x*w,oy=o.y*h,selected=i===activeObstacle;bctx.save();bctx.translate(ox,oy);bctx.rotate(o.kind==='rod'?o.angle:0);bctx.shadowColor=selected?'rgba(205,112,151,.38)':'rgba(61,73,69,.2)';bctx.shadowBlur=selected?12:6;if(o.kind==='rod'){const len=w*.24;bctx.lineCap='round';bctx.strokeStyle=selected?'#b96f8d':'#6b7770';bctx.lineWidth=Math.max(7,baseR*.48);bctx.beginPath();bctx.moveTo(-len/2,0);bctx.lineTo(len/2,0);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff99';bctx.lineWidth=Math.max(1.5,baseR*.1);bctx.beginPath();bctx.moveTo(-len/2+3,-1);bctx.lineTo(len/2-3,-1);bctx.stroke()}else if(o.kind==='disk'){const rr=baseR*2.65,gr=bctx.createRadialGradient(-rr*.3,-rr*.35,rr*.08,0,0,rr);gr.addColorStop(0,'#fff7e5');gr.addColorStop(.55,selected?'#d9a2b7':'#aebfb5');gr.addColorStop(1,selected?'#a96d85':'#71867b');bctx.fillStyle=gr;bctx.strokeStyle=selected?'#b76f8c':'#65766d';bctx.lineWidth=2;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff88';bctx.lineWidth=1.5;bctx.beginPath();bctx.arc(-rr*.08,-rr*.08,rr*.72,-2.4,-.5);bctx.stroke()}else{const rr=baseR*3.2,thick=Math.max(8,baseR*.62);bctx.strokeStyle=selected?'#8f6377':'#535d5b';bctx.lineWidth=thick;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff70';bctx.lineWidth=Math.max(1,thick*.18);bctx.beginPath();bctx.arc(0,0,rr,Math.PI*1.05,Math.PI*1.75);bctx.stroke();bctx.fillStyle='#ffffff55';bctx.beginPath();bctx.arc(0,0,Math.max(2,thick*.17),0,Math.PI*2);bctx.fill()}bctx.restore()}for(const ball of balls.slice(0,ballCount)){const def=sizeDefs[ball.size],r=baseR*def.radius*(ball.special?1.18:1),m=ball.motion;if(!m)continue;const x=m.x,y=m.y;bctx.save();bctx.translate(x,y);bctx.rotate(m.spin);const grad=bctx.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r*1.25);grad.addColorStop(0,'#fffefb');grad.addColorStop(.34,ball.color[0]);grad.addColorStop(1,ball.color[1]);bctx.fillStyle=grad;bctx.strokeStyle=ball.color[1];bctx.lineWidth=Math.max(1.2,r*.09);bctx.beginPath();bctx.arc(0,0,r,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.strokeStyle='rgba(80,70,62,.42)';bctx.lineWidth=Math.max(1.2,r*.08);bctx.beginPath();bctx.arc(0,0,r*.64,-.65,.65);bctx.stroke();bctx.restore()}bctx.restore()}
  function animateBuilding(now){if(!buildingCanvas.isConnected)return;const g=gameGeometry(),dt=lastFrame?Math.min(.05,(now-lastFrame)/1000):.016;lastFrame=now;balls.slice(0,ballCount).forEach(ball=>advanceBall(ball,dt,g,now));drawBuilding(now);buildingRaf=requestAnimationFrame(animateBuilding)}if(!isWriting)buildingRaf=requestAnimationFrame(animateBuilding);
  // Drawing and calligraphy.
- async function saveCanvas(){try{await put('sandDrawing_'+theme,canvas.toDataURL('image/png'))}catch{}}if(isWriting)sandFlush=saveCanvas;function queueSave(){if(sandSaveTimer)clearTimeout(sandSaveTimer);sandSaveTimer=setTimeout(()=>{sandSaveTimer=null;saveCanvas()},240)}async function loadTheme(t){if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}if(themeLoaded)await saveCanvas();theme=t;themeLoaded=true;stage.classList.toggle('ink-paper',theme==='ink');corner.content.querySelectorAll('.sand-tools [data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);await put('sandTheme',theme);await put('calligraphyTheme1044',theme);const data=await get('sandDrawing_'+theme);if(data){const image=new Image();image.onload=()=>ctx.drawImage(image,0,0,stage.clientWidth,stage.clientHeight);image.src=data}}get('calligraphyTheme1044').then(t=>{if(isWriting&&canvas.isConnected&&!themeLoaded)loadTheme(t==='sand'?'sand':'ink')});findControl('sandColor').onclick=()=>loadTheme('sand');findControl('inkColor').onclick=()=>loadTheme('ink');findControl('stampCalligraphy').onclick=async()=>{
+ let drawingDirty=false,loadingDrawing=false;
+ async function saveCanvas(){
+  if(!drawingDirty||!canvas.width||!canvas.height)return;
+  try{await put('sandDrawing_'+theme,canvas.toDataURL('image/png'))}catch(error){console.error('書道の保存に失敗しました',error)}
+ }
+ if(isWriting)sandFlush=saveCanvas;
+ function queueSave(){
+  drawingDirty=true;
+  clearTimeout(sandSaveTimer);
+  sandSaveTimer=setTimeout(()=>{sandSaveTimer=null;saveCanvas()},240);
+ }
+ async function loadTheme(t){
+  if(loadingDrawing||!canvas.isConnected)return;
+  loadingDrawing=true;
+  try{
+   clearTimeout(sandSaveTimer);
+   sandSaveTimer=null;
+   if(themeLoaded)await saveCanvas();
+   if(!canvas.isConnected)return;
+   const data=await get('sandDrawing_'+t);
+   const image=data?new Image():null;
+   if(image){
+    image.src=data;
+    await image.decode();
+   }
+   if(!canvas.isConnected)return;
+   theme=t;
+   themeLoaded=true;
+   drawingDirty=false;
+   stage.classList.toggle('ink-paper',theme==='ink');
+   corner.content.querySelectorAll('.sand-tools [data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));
+   ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);
+   if(image)ctx.drawImage(image,0,0,stage.clientWidth,stage.clientHeight);
+   await put('calligraphyTheme1044',theme);
+  }catch(error){console.error('書道の読み込みに失敗しました',error)}
+  finally{loadingDrawing=false}
+ }
+ get('calligraphyTheme1044').then(t=>{if(isWriting&&!themeLoaded)loadTheme(t==='sand'?'sand':'ink')});
+ findControl('sandColor').onclick=()=>loadTheme('sand');findControl('inkColor').onclick=()=>loadTheme('ink');findControl('stampCalligraphy').onclick=async()=>{
+ if(loadingDrawing||!themeLoaded)return;
  const text=sampleText,styleAtStart=theme;
  closeWritingSettings();
  await new Promise(requestAnimationFrame);
@@ -1404,8 +1447,9 @@ get('calligraphySample').then(value=>{
  ctx.font=font;
  stampVertical(ctx,text,{rows,columns,advance,right:width-margin-size/2,top:margin+size/2});
  ctx.restore();
+ drawingDirty=true;
  saveCanvas();
-};function brushWidth(speed=0){return Math.max(5,Math.min(58,44-speed*34))}canvas.onpointerdown=e=>{e.preventDefault();drawing=true;pointerId=e.pointerId;canvas.setPointerCapture(pointerId);const r=canvas.getBoundingClientRect();lastPoint={x:e.clientX-r.left,y:e.clientY-r.top,width:brushWidth(0),time:e.timeStamp}};canvas.onpointermove=e=>{if(!drawing||e.pointerId!==pointerId)return;e.preventDefault();const r=canvas.getBoundingClientRect(),point={x:e.clientX-r.left,y:e.clientY-r.top,time:e.timeStamp};const elapsed=Math.max(8,point.time-(lastPoint.time||point.time-16)),speed=Math.hypot(point.x-lastPoint.x,point.y-lastPoint.y)/elapsed;point.width=brushWidth(speed);ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle=theme==='ink'?'rgba(20,18,19,.88)':'rgba(102,62,29,.72)';ctx.lineWidth=(lastPoint.width+point.width)/2;ctx.shadowColor=theme==='ink'?'rgba(0,0,0,.18)':'rgba(83,48,22,.38)';ctx.shadowBlur=theme==='ink'?0:3;ctx.stroke();if(theme==='sand'){ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle='rgba(255,239,193,.38)';ctx.lineWidth=Math.max(1,point.width*.13);ctx.stroke()}lastPoint=point;queueSave()};const endDraw=e=>{if(e.pointerId===pointerId){drawing=false;pointerId=null;lastPoint=null;saveCanvas()}};canvas.onpointerup=endDraw;canvas.onpointercancel=endDraw;findControl('clearSand').onclick=async()=>{if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);await del('sandDrawing_'+theme)};if(!isWriting&&'vibrate'in navigator){navigator.vibrate([70,1800]);vibeTimer=setInterval(()=>navigator.vibrate([70,1800]),1870);findControl('vibeNote').textContent='ボールがゆっくり循環し、振動しています'}if(isWriting)requestAnimationFrame(()=>{if(!overlay.classList.contains('show')||!sandStage.isConnected)return;resize()})}
+};function brushWidth(speed=0){return Math.max(5,Math.min(58,44-speed*34))}canvas.onpointerdown=e=>{if(loadingDrawing||!themeLoaded)return;e.preventDefault();drawing=true;pointerId=e.pointerId;canvas.setPointerCapture(pointerId);const r=canvas.getBoundingClientRect();lastPoint={x:e.clientX-r.left,y:e.clientY-r.top,width:brushWidth(0),time:e.timeStamp}};canvas.onpointermove=e=>{if(!drawing||e.pointerId!==pointerId)return;e.preventDefault();const r=canvas.getBoundingClientRect(),point={x:e.clientX-r.left,y:e.clientY-r.top,time:e.timeStamp};const elapsed=Math.max(8,point.time-(lastPoint.time||point.time-16)),speed=Math.hypot(point.x-lastPoint.x,point.y-lastPoint.y)/elapsed;point.width=brushWidth(speed);ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle=theme==='ink'?'rgba(20,18,19,.88)':'rgba(102,62,29,.72)';ctx.lineWidth=(lastPoint.width+point.width)/2;ctx.shadowColor=theme==='ink'?'rgba(0,0,0,.18)':'rgba(83,48,22,.38)';ctx.shadowBlur=theme==='ink'?0:3;ctx.stroke();if(theme==='sand'){ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(lastPoint.x,lastPoint.y);ctx.lineTo(point.x,point.y);ctx.strokeStyle='rgba(255,239,193,.38)';ctx.lineWidth=Math.max(1,point.width*.13);ctx.stroke()}lastPoint=point;queueSave()};const endDraw=e=>{if(e.pointerId===pointerId){drawing=false;pointerId=null;lastPoint=null;saveCanvas()}};canvas.onpointerup=endDraw;canvas.onpointercancel=endDraw;findControl('clearSand').onclick=async()=>{if(loadingDrawing||!themeLoaded)return;drawingDirty=false;if(sandSaveTimer){clearTimeout(sandSaveTimer);sandSaveTimer=null}ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight);await del('sandDrawing_'+theme)};if(!isWriting&&'vibrate'in navigator){navigator.vibrate([70,1800]);vibeTimer=setInterval(()=>navigator.vibrate([70,1800]),1870);findControl('vibeNote').textContent='ボールがゆっくり循環し、振動しています'}if(isWriting)requestAnimationFrame(()=>{if(!overlay.classList.contains('show')||!sandStage.isConnected)return;resize()})}
 // YouTube.
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function parseYouTube(raw){try{const u=new URL(raw.trim());if(!['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be','youtube-nocookie.com','www.youtube-nocookie.com'].includes(u.hostname.toLowerCase()))return null;let id='',list=u.searchParams.get('list')||'';if(u.hostname.toLowerCase().includes('youtu.be'))id=u.pathname.split('/').filter(Boolean)[0]||'';else if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else{const m=u.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/);if(m)id=m[1]}if(id&&!/^[\w-]{11}$/.test(id))return null;if(!id&&!list)return null;if(list&&!/^[\w-]+$/.test(list))return null;return {id,list,embed:id?`https://www.youtube-nocookie.com/embed/${id}${list?`?list=${encodeURIComponent(list)}`:''}`:`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(list)}`,external:u.href}}catch{return null}}
@@ -1424,9 +1468,10 @@ async function playYouTube(index){
  const items=await loadListenVideos(),item=items[index],parsed=item&&parseYouTube(item.url);
  if(requestId!==viewRequest)return;if(!parsed)return;
  const findControl=show(`<h2 id="sheetTitle">${escapeHTML(item.title)}</h2><iframe class="yt-player" id="ytFrame" title="${escapeHTML(item.title)}" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="actions"><button class="secondary" id="ytExternal">YouTubeで開く</button><button class="secondary" id="ytBack">動画一覧へ戻る</button></div><p class="help">自動再生されない場合は、動画の再生マークを押してください。</p>`);
+ activeCorner.videoUrl=item.url;
  findControl('ytFrame').src=parsed.embed+(parsed.embed.includes('?')?'&':'?')+'autoplay=1&playsinline=1';
  findControl('ytExternal').onclick=()=>{const frame=findControl('ytFrame');if(frame)frame.src='about:blank';window.location.assign(parsed.external)};
- findControl('ytBack').onclick=openListen;
+ findControl('ytBack').onclick=()=>openCorner('listen',openListen);
 }
 async function registerYouTube(index){
  const requestId=viewRequest;
