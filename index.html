@@ -24,6 +24,9 @@
 .cover-controls button{min-height:38px;padding:5px 10px;border:1px solid #89a798;border-radius:999px;background:#eff7f2;color:#405b4d;font-size:12px;cursor:pointer}
 .overlay.parked{visibility:hidden;opacity:0;pointer-events:none}
 .overlay.game-view [data-screen-control=sheetContent]{height:100%;min-height:0}
+.ball-controls:not([hidden]){max-height:43dvh;overflow-y:auto;flex-shrink:0;overscroll-behavior:contain;touch-action:pan-y}
+.writing-stamp-buttons{display:grid;gap:8px}
+.writing-stamp-buttons button{width:100%;min-height:42px}
 </style>
 </head>
 <body>
@@ -38,7 +41,7 @@
   <div class="card whowatch-card"><button class="card-main" data-mode="whowatch" type="button"><span class="icon" aria-hidden="true">♥</span><span class="card-copy"><span class="card-title">ふわっち</span><span class="card-desc">ふわっちを開く</span></span></button></div>
  </section>
  <p class="note"><strong>これは玩具です。</strong>診断・治療・診察を行うものではありません。</p>
- <footer class="footer"><small class="app-version">ver. 1.061</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
+ <footer class="footer"><small class="app-version">ver. 1.062</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
 </main>
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><section class="sheet"><button class="close" id="closeBtn" aria-label="閉じる">×</button><div id="sheetContent"></div></section></div>
 <script>
@@ -52,6 +55,16 @@ de:{"一時停止":"Pause","リピート：オフ":"Wiederholen: aus","リピー
 vi:{"一時停止":"Tạm dừng","リピート：オフ":"Lặp lại: Tắt","リピート：オン":"Lặp lại: Bật","再生位置":"Vị trí phát","再生できませんでした":"Không thể phát bài này","アプリの使い方":"Cách sử dụng ứng dụng","聴く：YouTube動画を選んで再生します。動画名やURLは「YouTube動画を変更」から差し替えられます。「わたし好みの音楽」にはスマホ内の曲を1曲登録できます。":"Nghe: Chọn video YouTube để phát. Đổi tên hoặc liên kết trong “Đổi video YouTube”. Bạn có thể lưu một bài nhạc trong điện thoại ở “Nhạc tôi thích”.","観る：1回タップでは何も起きません。2回タップで拡大を元に戻し、左右のスワイプで写真を切り替えます。二本指で拡大できます。観るボタンを2秒長押しすると写真・動画を登録できます。":"Xem: Chạm một lần không làm gì. Chạm hai lần để trở về cỡ ban đầu; vuốt trái/phải để đổi ảnh; dùng hai ngón tay để phóng to. Nhấn giữ nút Xem 2 giây để thêm ảnh.","表紙の「感じる　落ち着く動画」「感じる　書道で落ち着く」から直接開けます。":"Mở hoạt ảnh bóng hoặc thư pháp bằng hai nút Cảm nhận trên trang bìa.","iPhoneでホーム画面にアイコンを作る":"Thêm biểu tượng vào Màn hình chính iPhone","公開ページをSafariで開きます。":"Mở trang công khai bằng Safari.","共有ボタン（四角から上向き矢印）を押します。":"Chạm nút Chia sẻ (hình vuông có mũi tên lên).","メニューから「ホーム画面に追加」を選び、「追加」を押します。項目が見つからない場合は、共有メニューの「アクションを編集」を確認してください。":"Chọn “Thêm vào Màn hình chính”, rồi chạm “Thêm”. Nếu không thấy, hãy kiểm tra “Sửa tác vụ” trong menu Chia sẻ.","Androidでホーム画面にアイコンを作る":"Thêm biểu tượng vào Màn hình chính Android","公開ページをChromeで開きます。":"Mở trang công khai bằng Chrome.","右上の「︙」を押し、「インストールとショートカットを作成」を選びます。":"Chạm “︙” ở góc trên bên phải và chọn “Cài đặt và tạo lối tắt”.","「ショートカットを作成」または「インストール」を選び、「追加」を押します。端末やChromeの版によって表示名が異なる場合があります。":"Chọn “Tạo lối tắt” hoặc “Cài đặt”, rồi chạm “Thêm”. Tên mục có thể khác theo thiết bị và phiên bản Chrome.","音が出ないとき":"Khi không có âm thanh","iPhone：公開ページをSafariで開き直して、再生ボタンを押してください。":"iPhone: Mở lại trang công khai bằng Safari và chạm Phát.","Android：アプリ内で開いていて音が出ない場合、上部の黒い三つ星（︙）を押し、「オリジナルのブラウザで開く」または「ブラウザで開く」を選び、Chromeなどで開き直してください。表示名やメニュー位置はアプリの版で異なることがあります。":"Android: Nếu không có tiếng trong ứng dụng khác, chạm menu ba chấm (︙), chọn “Mở bằng trình duyệt” rồi mở lại bằng Chrome. Tên và vị trí menu có thể khác.","ふわっちからの戻り方":"Cách quay lại từ Fuwatch","ふわっちが新しいタブで開いた場合は、ブラウザのタブ一覧から「パニックパニック」を選びます。同じタブで開いた場合は、ブラウザの「戻る」矢印を押します。":"Fuwatch mở trong cùng một thẻ. Xem xong, nhấn mũi tên Quay lại của trình duyệt để trở về ứng dụng.","YouTubeからの戻り方":"Cách quay lại từ YouTube","ブラウザ内の動画画面は、画面内の「戻る」を押します。YouTubeアプリや別ページに移った場合は、ブラウザの「戻る」矢印か、端末のアプリ切替画面から元のブラウザに戻ります。":"Video phát trong ứng dụng. Nhấn nút Quay lại trên màn hình để trở về. Nếu chọn “Mở trong YouTube”, hãy dùng mũi tên Quay lại hoặc trình chuyển ứng dụng.","ご注意：":"Lưu ý:","これは玩具です。医療機器ではなく、診断・治療・診察を行いません。動作、保存、通信、音声再生、表示内容、気分への効果などについて一切保証しません。登録した写真と曲はこの端末のブラウザ内に保存されます。YouTube動画の再生にはインターネット通信が必要です。別の端末やブラウザには登録内容が自動で移りません。":"Đây là đồ chơi, không phải thiết bị y tế và không chẩn đoán, điều trị hay khám bệnh. Không bảo đảm hoạt động, lưu trữ, kết nối, âm thanh, nội dung hoặc tác động tâm trạng. Ảnh và nhạc được lưu trong trình duyệt trên thiết bị này. YouTube cần Internet; dữ liệu không tự chuyển sang thiết bị khác.","研究資料・出典を読む":"Đọc nghiên cứu và nguồn",'コース変更':'Đổi đường đi','変更終了':'Xong','設定':'Cài đặt','書道の設定':'Cài đặt thư pháp','色替え':'Đổi màu','砂色':'Màu cát','白地・黒墨':'Nền trắng, mực đen','消去':'Xóa','お手本表示：':'Mẫu:','（押すと変更）':'(Chạm để sửa)','お手本の文字':'Chữ mẫu','お手本の文字を入力':'Nhập chữ mẫu','お手本記入':'Viết chữ mẫu','開始':'Bắt đầu','（医療機器用品ではありません）':'(Không phải thiết bị y tế)','読んでね':'Hướng dẫn','言語':'Ngôn ngữ','聴く':'Nghe','観る':'Xem','感じる':'Cảm nhận','落ち着く動画':'Video thư giãn','書道で落ち着く':'Thư giãn bằng thư pháp','YouTubeの音・好きな曲を再生':'Phát YouTube hoặc nhạc yêu thích','写真を表示・スワイプで選択':'Xem và vuốt để chọn ảnh','パニック障害を乗り越えました':'Tôi đã vượt qua chứng hoảng sợ','YouTube動画を開く':'Mở video YouTube','ふわっち':'Fuwatch','ふわっちを開く':'Mở Fuwatch','これは玩具です。':'Đây là đồ chơi.','診断・治療・診察を行うものではありません。':'Ứng dụng không chẩn đoán hay điều trị.','戻る':'Quay lại','閉じる':'Đóng','写真・動画を登録':'Thêm ảnh','写真を追加':'Thêm ảnh','写真・動画を登録・編集':'Thêm hoặc sửa ảnh','この画面を消す':'Xóa màn hình này','YouTube動画を変更':'Đổi video YouTube','わたし好みの音楽':'Nhạc tôi thích','別の曲を登録':'Thêm bài khác','保存する':'Lưu','貼り付け':'Dán','研究資料・出典を読む':'Đọc nghiên cứu và nguồn','研究資料':'Thông tin nghiên cứu','音が出ないとき':'Khi không có âm thanh','言語を選ぶ':'Chọn ngôn ngữ','アプリの使い方':'Cách dùng ứng dụng','YouTubeで再生':'Phát trên YouTube'},
 hi:{"一時停止":"रोकें","リピート：オフ":"दोहराएँ: बंद","リピート：オン":"दोहराएँ: चालू","再生位置":"प्लेबैक स्थिति","再生できませんでした":"यह गीत नहीं चल सका","アプリの使い方":"ऐप का उपयोग कैसे करें","聴く：YouTube動画を選んで再生します。動画名やURLは「YouTube動画を変更」から差し替えられます。「わたし好みの音楽」にはスマホ内の曲を1曲登録できます。":"सुनें: चलाने के लिए YouTube वीडियो चुनें। “YouTube वीडियो बदलें” से नाम या लिंक बदलें। “मेरी पसंद का संगीत” में फ़ोन का एक गीत जोड़ सकते हैं।","観る：1回タップでは何も起きません。2回タップで拡大を元に戻し、左右のスワイプで写真を切り替えます。二本指で拡大できます。観るボタンを2秒長押しすると写真・動画を登録できます。":"देखें: एक बार टैप करने पर कुछ नहीं होगा। दो बार टैप करके आकार सामान्य करें; बाएँ/दाएँ स्वाइप से फ़ोटो बदलें; दो उँगलियों से ज़ूम करें। फ़ोटो जोड़ने के लिए देखें बटन 2 सेकंड दबाएँ।","表紙の「感じる　落ち着く動画」「感じる　書道で落ち着く」から直接開けます。":"मुखपृष्ठ के दो “महसूस करें” बटनों से गेंदों का ऐनिमेशन या सुलेख खोलें।","iPhoneでホーム画面にアイコンを作る":"iPhone होम स्क्रीन पर आइकन जोड़ें","公開ページをSafariで開きます。":"सार्वजनिक पेज Safari में खोलें।","共有ボタン（四角から上向き矢印）を押します。":"शेयर बटन (ऊपर तीर वाला चौकोर) दबाएँ।","メニューから「ホーム画面に追加」を選び、「追加」を押します。項目が見つからない場合は、共有メニューの「アクションを編集」を確認してください。":"“होम स्क्रीन में जोड़ें” चुनें, फिर “जोड़ें” दबाएँ। विकल्प न मिले तो शेयर मेन्यू में “ऐक्शन संपादित करें” देखें।","Androidでホーム画面にアイコンを作る":"Android होम स्क्रीन पर आइकन जोड़ें","公開ページをChromeで開きます。":"सार्वजनिक पेज Chrome में खोलें।","右上の「︙」を押し、「インストールとショートカットを作成」を選びます。":"ऊपर दाईं ओर “︙” दबाकर “इंस्टॉल और शॉर्टकट बनाएँ” चुनें।","「ショートカットを作成」または「インストール」を選び、「追加」を押します。端末やChromeの版によって表示名が異なる場合があります。":"“शॉर्टकट बनाएँ” या “इंस्टॉल” चुनें और “जोड़ें” दबाएँ। नाम डिवाइस और Chrome संस्करण के अनुसार बदल सकता है।","音が出ないとき":"आवाज़ न आए तो","iPhone：公開ページをSafariで開き直して、再生ボタンを押してください。":"iPhone: सार्वजनिक पेज Safari में फिर खोलें और चलाएँ दबाएँ।","Android：アプリ内で開いていて音が出ない場合、上部の黒い三つ星（︙）を押し、「オリジナルのブラウザで開く」または「ブラウザで開く」を選び、Chromeなどで開き直してください。表示名やメニュー位置はアプリの版で異なることがあります。":"Android: दूसरे ऐप में आवाज़ न आए तो ऊपर दाईं ओर तीन-बिंदु मेन्यू (︙) दबाएँ, “ब्राउज़र में खोलें” चुनें और Chrome में फिर खोलें। मेन्यू के नाम और स्थान अलग हो सकते हैं।","ふわっちからの戻り方":"Fuwatch से वापस कैसे आएँ","ふわっちが新しいタブで開いた場合は、ブラウザのタブ一覧から「パニックパニック」を選びます。同じタブで開いた場合は、ブラウザの「戻る」矢印を押します。":"Fuwatch उसी टैब में खुलेगा। देखने के बाद ऐप पर लौटने के लिए ब्राउज़र का पीछे वाला तीर दबाएँ।","YouTubeからの戻り方":"YouTube से वापस कैसे आएँ","ブラウザ内の動画画面は、画面内の「戻る」を押します。YouTubeアプリや別ページに移った場合は、ブラウザの「戻る」矢印か、端末のアプリ切替画面から元のブラウザに戻ります。":"वीडियो ऐप के अंदर चलता है। लौटने के लिए स्क्रीन पर “वापस” दबाएँ। “YouTube में खोलें” चुनने पर ब्राउज़र का पीछे तीर या ऐप स्विचर इस्तेमाल करें।","ご注意：":"ध्यान दें:","これは玩具です。医療機器ではなく、診断・治療・診察を行いません。動作、保存、通信、音声再生、表示内容、気分への効果などについて一切保証しません。登録した写真と曲はこの端末のブラウザ内に保存されます。YouTube動画の再生にはインターネット通信が必要です。別の端末やブラウザには登録内容が自動で移りません。":"यह खिलौना है, चिकित्सा उपकरण नहीं। यह निदान, उपचार या चिकित्सा-जाँच नहीं करता। संचालन, संग्रहण, कनेक्शन, ध्वनि, सामग्री या मनोदशा पर प्रभाव की कोई गारंटी नहीं है। फ़ोटो और संगीत इसी डिवाइस के ब्राउज़र में रहते हैं। YouTube के लिए इंटरनेट चाहिए; डेटा दूसरे डिवाइस में अपने-आप नहीं जाता।","研究資料・出典を読む":"शोध और स्रोत पढ़ें",'コース変更':'मार्ग बदलें','変更終了':'पूरा हुआ','設定':'सेटिंग्स','書道の設定':'सुलेख सेटिंग्स','色替え':'रंग बदलें','砂色':'रेत का रंग','白地・黒墨':'सफेद पृष्ठ, काली स्याही','消去':'मिटाएँ','お手本表示：':'नमूना:','（押すと変更）':'(बदलने के लिए दबाएँ)','お手本の文字':'नमूना पाठ','お手本の文字を入力':'नमूना पाठ दर्ज करें','お手本記入':'नमूना लिखें','開始':'शुरू करें','（医療機器用品ではありません）':'(यह चिकित्सा उपकरण नहीं है)','読んでね':'उपयोग निर्देश','言語':'भाषा','聴く':'सुनें','観る':'देखें','感じる':'महसूस करें','落ち着く動画':'शांत करने वाला वीडियो','書道で落ち着く':'सुलेख से शांति','YouTubeの音・好きな曲を再生':'YouTube या अपना पसंदीदा संगीत चलाएँ','写真を表示・スワイプで選択':'तस्वीरें देखें और स्वाइप करके चुनें','パニック障害を乗り越えました':'मैंने पैनिक डिसऑर्डर पर काबू पाया','YouTube動画を開く':'YouTube वीडियो खोलें','ふわっち':'Fuwatch','ふわっちを開く':'Fuwatch खोलें','これは玩具です。':'यह एक खिलौना है।','診断・治療・診察を行うものではありません。':'यह निदान या उपचार प्रदान नहीं करता।','戻る':'वापस','閉じる':'बंद करें','写真・動画を登録':'तस्वीरें जोड़ें','写真を追加':'तस्वीरें जोड़ें','写真・動画を登録・編集':'तस्वीरें जोड़ें या संपादित करें','この画面を消す':'यह स्क्रीन साफ़ करें','YouTube動画を変更':'YouTube वीडियो बदलें','わたし好みの音楽':'मेरा पसंदीदा संगीत','別の曲を登録':'दूसरा गीत जोड़ें','保存する':'सहेजें','貼り付け':'चिपकाएँ','研究資料・出典を読む':'शोध और स्रोत पढ़ें','研究資料':'शोध जानकारी','音が出ないとき':'आवाज़ न आने पर','言語を選ぶ':'भाषा चुनें','アプリの使い方':'ऐप का उपयोग','YouTubeで再生':'YouTube पर चलाएँ'}};
 const localizedRows=[
+["ワープドア", "Warp doors", "传送门", "워프 문", "Portes de téléportation", "Teleporttüren", "Cửa dịch chuyển", "टेलीपोर्ट दरवाज़े"],
+["タップで選んだ物を1つ削除", "Delete the one object you tapped", "删除点选的单个物体", "탭으로 선택한 물체 하나 삭제", "Supprimer l’objet sélectionné", "Das angetippte Objekt löschen", "Xóa một vật đã chọn", "छुई गई एक वस्तु हटाएँ"],
+["書道初める", "Start writing", "开始书写", "서예 시작", "Commencer à écrire", "Mit dem Schreiben beginnen", "Bắt đầu viết", "लिखना शुरू करें"],
+["ボールの数は1〜8個から選べます。各ボールのボタンで大きさを変えられます。ボール同士はぶつかりません。", "Choose 1–8 balls. Use each ball’s button to change its size. Balls pass through one another.", "可选择1至8个球。点击各球的按钮可调整大小。球之间不会碰撞。", "공을 1~8개 선택하세요. 각 공의 버튼으로 크기를 바꿀 수 있습니다. 공끼리는 충돌하지 않습니다.", "Choisissez de 1 à 8 balles. Le bouton de chaque balle permet de changer sa taille. Les balles se traversent.", "Wählen Sie 1 bis 8 Kugeln. Mit der jeweiligen Taste ändern Sie die Größe. Die Kugeln stoßen nicht zusammen.", "Chọn 1–8 quả bóng. Dùng nút của từng quả để đổi kích thước. Các quả bóng không va nhau.", "1 से 8 गेंदें चुनें। हर गेंद के बटन से उसका आकार बदलें। गेंदें आपस में नहीं टकरातीं।"],
+["「＋棒」「＋円盤」「＋タイヤ」で物を置き、指でドラッグして動かします。棒の端をタップすると、その側が15度下がります。", "Add a rod, disc or tire with the + buttons. Drag it to move it. Tap either end of a rod to lower that side by 15°.", "用＋按钮添加杆、圆盘或轮胎，拖动即可移动。轻点杆的一端，该端降低15°。", "＋ 버튼으로 막대, 원판, 타이어를 추가하고 끌어서 옮기세요. 막대 끝을 누르면 그쪽이 15도 내려갑니다.", "Ajoutez une barre, un disque ou un pneu avec les boutons +, puis faites-le glisser. Touchez une extrémité de la barre pour l’abaisser de 15°.", "Fügen Sie per + einen Stab, eine Scheibe oder einen Reifen hinzu und ziehen Sie das Objekt. Tippen Sie auf ein Stabende, um es um 15° abzusenken.", "Dùng nút + để thêm thanh, đĩa hoặc lốp rồi kéo để di chuyển. Chạm vào đầu thanh để hạ đầu đó 15°.", "+ से छड़, चकती या टायर जोड़ें और खींचकर हिलाएँ। छड़ का सिरा छूने पर वह 15° नीचे जाता है।"],
+["消したい棒・円盤・タイヤの中央をタップして選び、「タップで選んだ物を1つ削除」を押します。「全消去」は棒・円盤・タイヤをまとめて消します。", "Tap the center of a rod, disc or tire, then press Delete the one object you tapped. Clear all removes all rods, discs and tires.", "轻点杆、圆盘或轮胎的中央，再按“删除点选的单个物体”。“全部清除”会删除所有杆、圆盘和轮胎。", "막대, 원판, 타이어의 가운데를 누른 다음 선택한 물체 하나 삭제를 누르세요. 모두 지우기는 막대, 원판, 타이어를 모두 지웁니다.", "Touchez le centre d’une barre, d’un disque ou d’un pneu, puis appuyez sur Supprimer l’objet sélectionné. Tout effacer retire ces trois types d’objet.", "Tippen Sie auf die Mitte des Objekts und dann auf Das angetippte Objekt löschen. Alles löschen entfernt alle Stäbe, Scheiben und Reifen.", "Chạm vào giữa thanh, đĩa hoặc lốp rồi nhấn Xóa một vật đã chọn. Xóa tất cả sẽ xóa mọi thanh, đĩa và lốp.", "छड़, चकती या टायर के बीच में छुएँ, फिर चुनी वस्तु हटाएँ। सब मिटाएँ से ये सभी वस्तुएँ हटती हैं।"],
+["「床を消す」を押して床をなぞると穴が開きます。同じボタンを押すと穴を開ける操作を終了し、「元通り」で床の穴を元に戻せます。", "Press Erase floor and trace the floor to make a hole. Press it again to exit erasing. Restore repairs the floor.", "按“擦除地板”并划过地板开孔。再次按下结束擦除。“恢复”可修复地板。", "바닥 지우기를 누르고 바닥을 문질러 구멍을 만드세요. 다시 누르면 종료됩니다. 원래대로를 누르면 바닥이 복구됩니다.", "Appuyez sur Effacer le sol, puis tracez dessus pour créer un trou. Appuyez à nouveau pour quitter ce mode. Rétablir répare le sol.", "Wählen Sie Boden löschen und streichen Sie über den Boden. Erneutes Tippen beendet das Löschen. Wiederherstellen schließt die Löcher.", "Nhấn Xóa sàn rồi vuốt trên sàn để tạo lỗ. Nhấn lại để thoát. Khôi phục sẽ lấp lỗ.", "फ़र्श मिटाएँ दबाकर फ़र्श पर उँगली फेरें। मिटाना बंद करने के लिए फिर दबाएँ। बहाल करें से छेद बंद होते हैं।"],
+["「ワープドア」を押すと赤いINと緑のOUTが1組出ます。指でドラッグして離すと、穴ともう一方のドアを避けて最寄りの床に固定されます。もう一度押すと2枚とも消えます。", "Warp doors adds one red IN and one green OUT. Drag and release to snap to the nearest floor space clear of holes and the other door. Press again to remove both.", "按“传送门”出现一扇红色 IN 和一扇绿色 OUT。拖动松手后固定到最近且避开孔洞和另一扇门的地板。再按一次移除两扇门。", "워프 문을 누르면 빨간 IN과 초록 OUT이 하나씩 나옵니다. 끌어 놓으면 구멍과 다른 문을 피한 가장 가까운 바닥에 고정됩니다. 다시 누르면 두 문이 사라집니다.", "Portes de téléportation ajoute une porte IN rouge et une OUT verte. Faites-les glisser et relâchez pour les fixer au sol libre le plus proche. Appuyez à nouveau pour retirer les deux.", "Teleporttüren setzt eine rote IN- und eine grüne OUT-Tür. Ziehen und loslassen setzt sie auf den nächstgelegenen freien Boden. Erneut tippen entfernt beide.", "Cửa dịch chuyển tạo một cửa IN đỏ và một cửa OUT xanh. Kéo rồi thả để đặt vào sàn trống gần nhất, tránh lỗ và cửa kia. Nhấn lại để xóa cả hai.", "टेलीपोर्ट दरवाज़े से लाल IN और हरा OUT जुड़ते हैं। खींचकर छोड़ें ताकि दरवाज़ा निकटतम खाली फ़र्श पर टिके। फिर दबाने से दोनों हटते हैं।"],
+["INに入ったボールはOUTから同じ速さで出ます。下の階にIN、上の階にOUTを置き、ボールがINを通るようにするとコース内で循環します。", "Balls entering IN emerge from OUT at the same speed. Place IN on a lower floor along their path and OUT above it to make them loop through the course.", "球从 IN 进入后，以相同速度从 OUT 出来。把 IN 放在较低楼层的球路上、OUT 放在上层，球就会循环。", "IN에 들어간 공은 OUT에서 같은 속도로 나옵니다. 아래층의 공이 지나가는 곳에 IN을, 위층에 OUT을 놓으면 공이 순환합니다.", "Les balles entrent par IN et ressortent par OUT à la même vitesse. Placez IN sur leur trajet en bas et OUT plus haut pour créer une boucle.", "Kugeln gelangen durch IN hinein und kommen mit gleicher Geschwindigkeit aus OUT. Platzieren Sie IN unten auf der Bahn und OUT darüber für einen Kreislauf.", "Bóng vào IN sẽ ra OUT với cùng tốc độ. Đặt IN trên đường bóng ở tầng dưới và OUT ở tầng trên để bóng chạy vòng.", "IN से जाने वाली गेंद OUT से उसी गति पर निकलती है। गेंद के रास्ते में नीचे IN और ऊपर OUT रखें ताकि गेंदें चक्कर लगाएँ।"],
+
  ["全停止（60分後自動）","Stop all (auto after 60 min)","全部停止（60 分钟后自动）","모두 정지 (60분 후 자동)","Tout arrêter (auto après 60 min)","Alles stoppen (automatisch nach 60 Min.)","Dừng tất cả (tự động sau 60 phút)","सब रोकें (60 मिनट बाद स्वतः)"],
 ["写真・動画を登録", "Add photos and videos", "添加照片和视频", "사진·동영상 등록", "Ajouter des photos et vidéos", "Fotos und Videos hinzufügen", "Thêm ảnh và video", "फ़ोटो और वीडियो जोड़ें"],
 ["写真・動画を追加", "Add photos and videos", "添加照片和视频", "사진·동영상 추가", "Ajouter des photos et vidéos", "Fotos und Videos hinzufügen", "Thêm ảnh và video", "फ़ोटो और वीडियो जोड़ें"],
@@ -1233,7 +1246,7 @@ function startFeel(which='ball'){
  const corner=activeCorner,overlay=corner.panel;
  let buildingRaf=0,vibeTimer=null,sandSaveTimer=null,sandFlush=null;
  corner.cleanup=null;
- const findControl=show(`<div class="feel-root"><div class="feel-header"><h2 id="sheetTitle">落ち着く動画</h2><div class="game-header-actions"><button class="game-back" id="courseChange" type="button">コース変更</button><button class="game-back" id="writingSettingsBtn" type="button" hidden>設定</button><button class="game-back" id="gameBack" type="button">戻る</button></div></div><div id="ballPanel" role="tabpanel"><div class="saturation-stage" aria-label="大きさと速度の違う最大8個のボールが7階を巡る連続アニメーション"><canvas id="buildingCanvas"></canvas></div><div class="ball-controls" id="ballControls" hidden><div class="ball-count-row"><span class="ball-count-label">ボールの数</span><div class="ball-count-options" id="ballCountOptions" role="group" aria-label="表示するボールの数"><button type="button" data-count="1">1</button><button type="button" data-count="2">2</button><button type="button" data-count="3" class="active" aria-pressed="true">3</button><button type="button" data-count="4">4</button><button type="button" data-count="5">5</button><button type="button" data-count="6">6</button><button type="button" data-count="7">7</button><button type="button" data-count="8">8</button></div></div><div class="ball-edit-row"><button id="eraseFloorBtn" type="button" aria-pressed="false">床を消す</button><button id="restoreFloorBtn" type="button">元通り</button></div><div class="obstacle-tools"><div class="obstacle-add-row"><button type="button" data-add-obstacle="rod">＋棒</button><button type="button" data-add-obstacle="disk">＋円盤</button><button type="button" data-add-obstacle="tire">＋タイヤ</button><span id="obstacleSelected">置いた物は指で移動</span></div><div class="obstacle-edit-row"><button id="deleteObstacle" type="button">選択を削除</button><button id="clearObstacles" type="button">全消去</button></div></div><div class="ball-size-controls" id="ballSizeControls" aria-label="ボールごとの大きさ"></div><button class="ball-reroll" id="randomizeBalls" type="button">サイズの組み合わせをランダムにする</button><p class="ball-help">小さいボールほど速く動きます。ボール同士はぶつかりません。床を消すを押して床をなぞると穴になります。棒・円盤・タイヤを置いて指で移動。棒の左右の端をタップすると、押した側が15度下がります。</p></div><div class="vibe-note" id="vibeNote" style="margin:8px 18px">ボールが最下部から最上部へ戻ります</div></div><div id="writingPanel" class="writing-panel" role="tabpanel" hidden><div id="writingCanvasView" class="writing-canvas-view"><div class="sand-stage" id="sandStage"><canvas id="sandCanvas" aria-label="指で自由に文字や模様を書く"></canvas></div></div><section id="writingSettingsPanel" class="writing-settings-panel" aria-label="書道の設定" hidden><h3>書道の設定</h3><div class="writing-settings-grid"><div class="writing-setting-group"><h4>色替え</h4><div class="sand-tools writing-color-tools"><button id="sandColor" data-theme="sand" type="button">砂色</button><button id="inkColor" data-theme="ink" type="button">白地・黒墨</button></div></div><button id="clearSand" class="writing-action-button" type="button">消去</button><div class="writing-setting-group calligraphy-tools"><button id="samplePreview" class="sample-preview" type="button"><span>お手本表示：</span><strong id="samplePreviewText" data-user-content>大丈夫</strong><small>（押すと変更）</small></button></div><button id="stampCalligraphy" class="writing-action-button stamp-action" type="button">お手本記入</button></div><div class="writing-settings-actions"><button id="writingSettingsBack" class="secondary" type="button">戻る</button><button id="writingStart" class="primary" type="button">開始</button></div></section></div></div>`);const isWriting=which==='writing';overlay.classList.add('game-view');findControl('ballPanel').hidden=isWriting;findControl('writingPanel').hidden=!isWriting;findControl('sheetTitle').textContent=isWriting?'書道で落ち着く':'落ち着く動画';const courseButton=findControl('courseChange'),ballControls=findControl('ballControls');courseButton.hidden=isWriting;let courseOpen=false;courseButton.onclick=()=>{courseOpen=!courseOpen;ballControls.hidden=!courseOpen;const ja=courseOpen?'変更終了':'コース変更';courseButton.textContent=ja;courseButton.setAttribute('aria-expanded',String(courseOpen));requestAnimationFrame(resize)};ballControls.hidden=true;findControl('gameBack').onclick=close;const canvas=findControl('sandCanvas'),stage=canvas.parentElement,ctx=canvas.getContext('2d'),buildingCanvas=findControl('buildingCanvas'),buildingStage=buildingCanvas.parentElement,bctx=buildingCanvas.getContext('2d'),sandStage=findControl('sandStage'),writingCanvasView=findControl('writingCanvasView'),writingSettingsPanel=findControl('writingSettingsPanel'),samplePreviewText=findControl('samplePreviewText');let sampleText='大丈夫',sampleChanged=false;let drawing=false,pointerId=null,lastPoint=null,theme='ink',themeLoaded=false;
+ const findControl=show(`<div class="feel-root"><div class="feel-header"><h2 id="sheetTitle">落ち着く動画</h2><div class="game-header-actions"><button class="game-back" id="courseChange" type="button">コース変更</button><button class="game-back" id="writingSettingsBtn" type="button" hidden>設定</button><button class="game-back" id="gameBack" type="button">戻る</button></div></div><div id="ballPanel" role="tabpanel"><div class="saturation-stage" aria-label="大きさと速度の違う最大8個のボールが7階を巡る連続アニメーション"><canvas id="buildingCanvas"></canvas></div><div class="ball-controls" id="ballControls" hidden><div class="ball-count-row"><span class="ball-count-label">ボールの数</span><div class="ball-count-options" id="ballCountOptions" role="group" aria-label="表示するボールの数"><button type="button" data-count="1">1</button><button type="button" data-count="2">2</button><button type="button" data-count="3" class="active" aria-pressed="true">3</button><button type="button" data-count="4">4</button><button type="button" data-count="5">5</button><button type="button" data-count="6">6</button><button type="button" data-count="7">7</button><button type="button" data-count="8">8</button></div></div><div class="ball-edit-row"><button id="eraseFloorBtn" type="button" aria-pressed="false">床を消す</button><button id="restoreFloorBtn" type="button">元通り</button></div><div class="obstacle-tools"><div class="obstacle-add-row"><button type="button" data-add-obstacle="rod">＋棒</button><button type="button" data-add-obstacle="disk">＋円盤</button><button type="button" data-add-obstacle="tire">＋タイヤ</button><span id="obstacleSelected">置いた物は指で移動</span></div><div class="obstacle-edit-row"><button id="deleteObstacle" type="button">タップで選んだ物を1つ削除</button><button id="clearObstacles" type="button">全消去</button><button id="warpDoors" type="button" aria-pressed="false">ワープドア</button></div></div><div class="ball-size-controls" id="ballSizeControls" aria-label="ボールごとの大きさ"></div><button class="ball-reroll" id="randomizeBalls" type="button">サイズの組み合わせをランダムにする</button><div class="ball-help"><p>ボールの数は1〜8個から選べます。各ボールのボタンで大きさを変えられます。ボール同士はぶつかりません。</p><p>「＋棒」「＋円盤」「＋タイヤ」で物を置き、指でドラッグして動かします。棒の端をタップすると、その側が15度下がります。</p><p>消したい棒・円盤・タイヤの中央をタップして選び、「タップで選んだ物を1つ削除」を押します。「全消去」は棒・円盤・タイヤをまとめて消します。</p><p>「床を消す」を押して床をなぞると穴が開きます。同じボタンを押すと穴を開ける操作を終了し、「元通り」で床の穴を元に戻せます。</p><p>「ワープドア」を押すと赤いINと緑のOUTが1組出ます。指でドラッグして離すと、穴ともう一方のドアを避けて最寄りの床に固定されます。もう一度押すと2枚とも消えます。</p><p>INに入ったボールはOUTから同じ速さで出ます。下の階にIN、上の階にOUTを置き、ボールがINを通るようにするとコース内で循環します。</p></div></div><div class="vibe-note" id="vibeNote" style="margin:8px 18px">ボールが最下部から最上部へ戻ります</div></div><div id="writingPanel" class="writing-panel" role="tabpanel" hidden><div id="writingCanvasView" class="writing-canvas-view"><div class="sand-stage" id="sandStage"><canvas id="sandCanvas" aria-label="指で自由に文字や模様を書く"></canvas></div></div><section id="writingSettingsPanel" class="writing-settings-panel" aria-label="書道の設定" hidden><h3>書道の設定</h3><div class="writing-settings-grid"><div class="writing-setting-group"><h4>色替え</h4><div class="sand-tools writing-color-tools"><button id="sandColor" data-theme="sand" type="button">砂色</button><button id="inkColor" data-theme="ink" type="button">白地・黒墨</button></div></div><button id="clearSand" class="writing-action-button" type="button">消去</button><div class="writing-setting-group calligraphy-tools"><button id="samplePreview" class="sample-preview" type="button"><span>お手本表示：</span><strong id="samplePreviewText" data-user-content>大丈夫</strong><small>（押すと変更）</small></button></div><div class="writing-stamp-buttons"><button id="stampCalligraphy" class="writing-action-button stamp-action" type="button">お手本記入</button><button id="writingStart" class="writing-action-button stamp-action" type="button">書道初める</button></div></div></section></div></div>`);const isWriting=which==='writing';overlay.classList.add('game-view');findControl('ballPanel').hidden=isWriting;findControl('writingPanel').hidden=!isWriting;findControl('sheetTitle').textContent=isWriting?'書道で落ち着く':'落ち着く動画';const courseButton=findControl('courseChange'),ballControls=findControl('ballControls');courseButton.hidden=isWriting;let courseOpen=false;courseButton.onclick=()=>{courseOpen=!courseOpen;ballControls.hidden=!courseOpen;const ja=courseOpen?'変更終了':'コース変更';courseButton.textContent=ja;courseButton.setAttribute('aria-expanded',String(courseOpen));requestAnimationFrame(resize)};ballControls.hidden=true;findControl('gameBack').onclick=close;const canvas=findControl('sandCanvas'),stage=canvas.parentElement,ctx=canvas.getContext('2d'),buildingCanvas=findControl('buildingCanvas'),buildingStage=buildingCanvas.parentElement,bctx=buildingCanvas.getContext('2d'),sandStage=findControl('sandStage'),writingCanvasView=findControl('writingCanvasView'),writingSettingsPanel=findControl('writingSettingsPanel'),samplePreviewText=findControl('samplePreviewText');let sampleText='大丈夫',sampleChanged=false;let drawing=false,pointerId=null,lastPoint=null,theme='ink',themeLoaded=false;
  // Canvas sizing.
  function resize(){const old=document.createElement('canvas');old.width=canvas.width;old.height=canvas.height;if(old.width)old.getContext('2d').drawImage(canvas,0,0);const dpr=Math.min(2,window.devicePixelRatio||1),w=stage.clientWidth,h=stage.clientHeight,bw=buildingStage.clientWidth,bh=buildingStage.clientHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(old.width)ctx.drawImage(old,0,0,old.width,old.height,0,0,w,h);buildingCanvas.width=Math.round(bw*dpr);buildingCanvas.height=Math.round(bh*dpr);bctx.setTransform(dpr,0,0,dpr,0,0)}resize();window.addEventListener('resize',resize,{passive:true});
  corner.cleanup=()=>{
@@ -1245,7 +1258,7 @@ function startFeel(which='ball'){
  };
 
  // The writing screen opens directly; settings overlay leaves the canvas mounted and intact.
- function closeWritingSettings(){writingSettingsPanel.hidden=true;writingCanvasView.hidden=false;requestAnimationFrame(resize)}findControl('writingSettingsBtn').onclick=()=>{writingCanvasView.hidden=false;writingSettingsPanel.hidden=false};findControl('writingSettingsBack').onclick=closeWritingSettings;findControl('writingStart').onclick=closeWritingSettings;findControl('samplePreview').onclick=()=>{
+ function closeWritingSettings(){writingSettingsPanel.hidden=true;writingCanvasView.hidden=false;requestAnimationFrame(resize)}findControl('writingSettingsBtn').onclick=()=>{writingCanvasView.hidden=false;writingSettingsPanel.hidden=false};findControl('writingStart').onclick=closeWritingSettings;findControl('samplePreview').onclick=()=>{
  const value=prompt(tr('お手本の文字を入力'),sampleText);
  if(value===null)return;
  sampleChanged=true;
@@ -1263,6 +1276,129 @@ get('calligraphySample').then(value=>{
  function baseGap(floor,g){const side=floor===levelCount-1||floor%2===0?'right':'left';return side==='right'?[g.right-g.hole,g.right]:[g.left,g.left+g.hole]}
  function gapsForFloor(floor,g){return[baseGap(floor,g),...floorErasures[floor]].sort((a,b)=>a[0]-b[0])}
  function inGap(floor,x,r,g){return gapsForFloor(floor,g).some(([a,b])=>x-r>=a&&x+r<=b)}
+ const doors=[];
+ let doorDrag=null;
+ const doorWidth=g=>Math.min(g.row*.65,Math.max(24,g.baseR*2.5));
+ function doorPosition(door,g){
+  return {x:door.x*g.w,y:g.top+(door.floor+1)*g.row};
+ }
+ function nearestDoorFloor(x,y,g,other){
+  const width=doorWidth(g),half=width/2;
+  let nearest=null,best=Infinity;
+  for(let floor=0;floor<levelCount;floor++){
+   const base=g.top+(floor+1)*g.row;
+   const occupied=gapsForFloor(floor,g).map(span=>[...span]);
+   if(other?.floor===floor){
+    const center=other.x*g.w;
+    occupied.push([center-half-2,center+half+2]);
+   }
+   occupied.push([g.right,g.right]);
+   occupied.sort((a,b)=>a[0]-b[0]);
+   let left=g.left;
+   for(const [start,end] of occupied){
+    if(start-left>=width){
+     const center=Math.max(left+half,Math.min(start-half,x));
+     const distance=Math.hypot(center-x,base-y);
+     if(distance<best){best=distance;nearest={x:center/g.w,floor}}
+    }
+    left=Math.max(left,end);
+   }
+  }
+  return nearest;
+ }
+ function toggleWarpDoors(){
+  if(doors.length){
+   doors.length=0;
+   doorDrag=null;
+   return;
+  }
+  const g=gameGeometry();
+  if(!g.w||!g.h)return;
+  const entrance=nearestDoorFloor(g.w*.5,g.bottom,g);
+  const exit=entrance&&nearestDoorFloor(g.w*.5,g.top+g.row,g,entrance);
+  if(entrance&&exit)doors.push({...entrance,label:'IN'},{...exit,label:'OUT'});
+ }
+ function drawDoor(door,g){
+  const width=doorWidth(g),height=g.row*.82;
+  const pos=doorDrag?.door===door?doorDrag:doorPosition(door,g);
+  const x=pos.x-width/2,y=pos.y-height;
+  bctx.save();
+  bctx.fillStyle='#63422e';
+  bctx.fillRect(x,y,width,height);
+  bctx.fillStyle=door.label==='IN'?'#9c4544':'#376f53';
+  bctx.fillRect(x+3,y+3,width-6,height-3);
+  bctx.strokeStyle='#ffffff30';
+  for(let i=1;i<=2;i++){
+   const line=x+width*i/3;
+   bctx.beginPath();bctx.moveTo(line,y+4);bctx.lineTo(line,pos.y-2);bctx.stroke();
+  }
+  bctx.fillStyle='#f5dfa8';
+  bctx.fillRect(x+width*.76,y+height*.67,3,3);
+  bctx.fillStyle='#fff';
+  bctx.font='bold '+Math.max(9,Math.min(14,width*.38))+'px sans-serif';
+  bctx.textAlign='center';
+  bctx.textBaseline='middle';
+  bctx.fillText(door.label,pos.x,y+height*.32);
+  bctx.restore();
+ }
+ function advanceWarp(ball,dt,g,r,speed){
+  const m=ball.motion,warp=m.warp;
+  if(!warp)return false;
+  const door=warp.stage==='in'?warp.entrance:warp.exit;
+  const pos=doorPosition(door,g);
+  warp.distance+=speed*dt;
+  if(warp.distance>=2*r){
+   warp.distance-=2*r;
+   if(warp.stage==='in'){
+    warp.stage='out';
+    warp.dir=doorDirection(warp.exit.floor);
+    return advanceWarp(ball,0,g,r,speed);
+   }
+   m.warp=null;
+   m.floor=door.floor;
+   m.state='roll';
+   m.dir=warp.dir;
+   m.x=pos.x+warp.dir*r;
+   m.y=pos.y-r;
+   m.blocker=null;
+   m.retry=0;
+   return true;
+  }
+  m.x=pos.x+warp.dir*(warp.distance-r);
+  m.y=pos.y-r;
+  m.spin+=warp.dir*speed*dt/r;
+  return true;
+ }
+ function doorDirection(floor){return floor===levelCount-1||floor%2===0?1:-1}
+ function enterWarp(ball,g,r,from){
+  if(doors.length!==2||doorDrag)return;
+  const m=ball.motion,[entrance,exit]=doors;
+  const pos=doorPosition(entrance,g);
+  const dx=m.x-from;
+  if(!dx||m.floor!==entrance.floor||m.state!=='roll'||Math.abs(m.y-(pos.y-r))>r*.5)return;
+  const dir=Math.sign(dx),edge=pos.x-dir*r;
+  if((from-edge)*dir<=0&&(m.x-edge)*dir>=0){
+   m.warp={entrance:{...entrance},exit:{...exit},dir,stage:'in',distance:Math.abs(m.x-edge)};
+   m.x=edge+dir*m.warp.distance;
+   m.y=pos.y-r;
+  }
+ }
+ function clipWarpBall(m,g){
+  const warp=m.warp;
+  if(!warp)return;
+  const entrance=warp.stage==='in';
+  const x=doorPosition(entrance?warp.entrance:warp.exit,g).x;
+  const showRight=entrance?warp.dir<0:warp.dir>0;
+  bctx.beginPath();
+  bctx.rect(showRight?x:0,0,showRight?g.w-x:x,g.h);
+  bctx.clip();
+ }
+ const warpButton=findControl('warpDoors');
+ warpButton.onclick=()=>{
+  setEraseMode(false);
+  toggleWarpDoors();
+  warpButton.setAttribute('aria-pressed',String(doors.length>0));
+ };
  function setEraseMode(on){eraseMode=on;eraseBtn.classList.toggle('active',on);eraseBtn.setAttribute('aria-pressed',String(on));buildingCanvas.style.cursor=on?'crosshair':(activeObstacle>=0?'grab':'default')}
  eraseBtn.onclick=()=>setEraseMode(!eraseMode);restoreBtn.onclick=()=>{floorErasures=Array.from({length:levelCount},()=>[])};
  const selectedLabel=findControl('obstacleSelected'),deleteObstacleBtn=findControl('deleteObstacle');
@@ -1270,22 +1406,51 @@ get('calligraphySample').then(value=>{
  function updateObstacleControls(){const o=obstacles[activeObstacle];selectedLabel.textContent=o?obstacleName(o)+'を選択中・指で移動':'追加後、指で移動';deleteObstacleBtn.disabled=!o;corner.content.querySelectorAll('[data-add-obstacle]').forEach(b=>b.classList.toggle('active',o&&b.dataset.addObstacle===o.kind));buildingCanvas.style.cursor=eraseMode?'crosshair':(o?'grab':'default')}
  corner.content.querySelectorAll('[data-add-obstacle]').forEach(button=>button.onclick=()=>{const g=gameGeometry(),n=obstacles.length,kind=button.dataset.addObstacle;setEraseMode(false);obstacles.push({kind,x:Math.max(.18,Math.min(.82,.5+((n%3)-1)*.13)),y:Math.max(.16,Math.min(.78,.39+(n%4)*.09)),angle:0});activeObstacle=obstacles.length-1;updateObstacleControls()});
  deleteObstacleBtn.onclick=()=>{if(activeObstacle<0)return;obstacles.splice(activeObstacle,1);activeObstacle=obstacles.length-1;updateObstacleControls()};findControl('clearObstacles').onclick=()=>{obstacles=[];activeObstacle=-1;updateObstacleControls()};
- function eraseAt(x,y){const g=gameGeometry();if(!g.w||!g.h)return;let floor=-1,best=Infinity;for(let i=0;i<levelCount;i++){const d=Math.abs(y-(g.top+(i+1)*g.row));if(d<best){best=d;floor=i}}if(best>Math.max(18,g.row*.24))return;const cut=Math.max(64,g.baseR*5.4),a=Math.max(g.left,Math.min(g.right,x-cut/2)),b=Math.max(g.left,Math.min(g.right,x+cut/2));if(b-a<8)return;floorErasures[floor].push([a,b]);floorErasures[floor].sort((u,v)=>u[0]-v[0]);const merged=[];for(const span of floorErasures[floor]){const prev=merged[merged.length-1];if(prev&&span[0]<=prev[1]+2)prev[1]=Math.max(prev[1],span[1]);else merged.push(span.slice())}floorErasures[floor]=merged}
+ function eraseAt(x,y){const g=gameGeometry();if(!g.w||!g.h)return;let floor=-1,best=Infinity;for(let i=0;i<levelCount;i++){const d=Math.abs(y-(g.top+(i+1)*g.row));if(d<best){best=d;floor=i}}if(best>Math.max(18,g.row*.24))return;const protectedDoor=doors.find(door=>door.floor===floor&&Math.abs(x-door.x*g.w)<Math.max(64,g.baseR*5.4)/2+doorWidth(g)/2);
+ if(protectedDoor)return;
+ const cut=Math.max(64,g.baseR*5.4),a=Math.max(g.left,Math.min(g.right,x-cut/2)),b=Math.max(g.left,Math.min(g.right,x+cut/2));if(b-a<8)return;floorErasures[floor].push([a,b]);floorErasures[floor].sort((u,v)=>u[0]-v[0]);const merged=[];for(const span of floorErasures[floor]){const prev=merged[merged.length-1];if(prev&&span[0]<=prev[1]+2)prev[1]=Math.max(prev[1],span[1]);else merged.push(span.slice())}floorErasures[floor]=merged}
  function obstacleHit(o,x,y,g){const ox=o.x*g.w,oy=o.y*g.h;if(o.kind==='rod'){const len=g.w*.24,ax=ox-Math.cos(o.angle)*len/2,ay=oy-Math.sin(o.angle)*len/2,bx=ox+Math.cos(o.angle)*len/2,by=oy+Math.sin(o.angle)*len/2,dx=bx-ax,dy=by-ay,t=Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(x-(ax+t*dx),y-(ay+t*dy))<28}const radius=g.baseR*(o.kind==='tire'?3.2:2.6);return Math.hypot(x-ox,y-oy)<radius+26}
- buildingCanvas.onpointerdown=e=>{e.preventDefault();const rect=buildingCanvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;if(eraseMode){erasePointer=e.pointerId;lastErasePoint={x,y};buildingCanvas.setPointerCapture(e.pointerId);eraseAt(x,y);return}let hit=-1;for(let i=obstacles.length-1;i>=0;i--)if(obstacleHit(obstacles[i],x,y,gameGeometry())){hit=i;break}if(hit>=0){activeObstacle=hit;dragPointer=e.pointerId;
+ buildingCanvas.onpointerdown=e=>{e.preventDefault();const rect=buildingCanvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;if(!eraseMode&&courseOpen&&!doorDrag){
+  const g=gameGeometry();
+  const door=doors.find(item=>{
+   const pos=doorPosition(item,g);
+   return Math.abs(x-pos.x)<=doorWidth(g)/2+4&&y>=pos.y-g.row*.82&&y<=pos.y+4;
+  });
+  if(door){doorDrag={door,x,y:y+g.row*.41,id:e.pointerId};buildingCanvas.setPointerCapture(e.pointerId);return}
+ }
+ if(eraseMode){erasePointer=e.pointerId;lastErasePoint={x,y};buildingCanvas.setPointerCapture(e.pointerId);eraseAt(x,y);return}let hit=-1;for(let i=obstacles.length-1;i>=0;i--)if(obstacleHit(obstacles[i],x,y,gameGeometry())){hit=i;break}if(hit>=0){activeObstacle=hit;dragPointer=e.pointerId;
   const o=obstacles[hit],g=gameGeometry();
   const projection=(x-o.x*g.w)*Math.cos(o.angle)+(y-o.y*g.h)*Math.sin(o.angle);
   const side=o.kind==='rod'&&Math.abs(projection)>=g.w*.24*.28
     ? Math.sign(projection)*(Math.cos(o.angle)<0?-1:1) : 0;
   obstacleGesture={o,x,y,side,moved:false};buildingCanvas.setPointerCapture(e.pointerId);updateObstacleControls()}};
- buildingCanvas.onpointermove=e=>{const rect=buildingCanvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;if(eraseMode&&e.pointerId===erasePointer){e.preventDefault();const prev=lastErasePoint||{x,y},distance=Math.hypot(x-prev.x,y-prev.y),steps=Math.max(1,Math.ceil(distance/18));for(let i=1;i<=steps;i++)eraseAt(prev.x+(x-prev.x)*i/steps,prev.y+(y-prev.y)*i/steps);lastErasePoint={x,y};return}if(e.pointerId===dragPointer&&obstacleGesture){
+ buildingCanvas.onpointermove=e=>{const rect=buildingCanvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;if(doorDrag?.id===e.pointerId){
+  const g=gameGeometry(),bottom=y+g.row*.41;
+  const other=doorPosition(doors.find(door=>door!==doorDrag.door),g);
+  if(Math.abs(x-other.x)>=doorWidth(g)||Math.abs(bottom-other.y)>=g.row*.82){
+   doorDrag.x=x;doorDrag.y=bottom;
+  }
+  return;
+ }
+ if(eraseMode&&e.pointerId===erasePointer){e.preventDefault();const prev=lastErasePoint||{x,y},distance=Math.hypot(x-prev.x,y-prev.y),steps=Math.max(1,Math.ceil(distance/18));for(let i=1;i<=steps;i++)eraseAt(prev.x+(x-prev.x)*i/steps,prev.y+(y-prev.y)*i/steps);lastErasePoint={x,y};return}if(e.pointerId===dragPointer&&obstacleGesture){
   e.preventDefault();
   const gesture=obstacleGesture;
   if(!gesture.moved&&Math.hypot(x-gesture.x,y-gesture.y)<8)return;
   gesture.moved=true;
   const g=gameGeometry(),o=gesture.o;
   if(!obstacles.includes(o))return;o.x=Math.max(.09,Math.min(.91,x/g.w));o.y=Math.max(.08,Math.min(.92,y/g.h))}};
- const endErase=e=>{if(e.pointerId===erasePointer){erasePointer=null;lastErasePoint=null}if(e.pointerId===dragPointer){
+ const endErase=e=>{
+ if(doorDrag?.id===e.pointerId){
+  const {door}=doorDrag;
+  if(e.type==='pointerup'){
+   const rect=buildingCanvas.getBoundingClientRect(),g=gameGeometry();
+   const placement=nearestDoorFloor(e.clientX-rect.left,e.clientY-rect.top,g,doors.find(other=>door!==other));
+   if(placement)Object.assign(door,placement);
+  }
+  doorDrag=null;
+  return;
+ }
+ if(e.pointerId===erasePointer){erasePointer=null;lastErasePoint=null}if(e.pointerId===dragPointer){
   const gesture=obstacleGesture;
   if(e.type==='pointerup'&&gesture?.side&&!gesture.moved&&obstacles.includes(gesture.o)){
     const rect=buildingCanvas.getBoundingClientRect();
@@ -1297,7 +1462,7 @@ get('calligraphySample').then(value=>{
  }};buildingCanvas.onpointerup=endErase;buildingCanvas.onpointercancel=endErase;updateObstacleControls();
  function renderBallControls(){corner.content.querySelectorAll('[data-screen-control=ballCountOptions] button').forEach(b=>{const active=Number(b.dataset.count)===ballCount;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});const box=findControl('ballSizeControls');box.innerHTML='';for(let i=0;i<ballCount;i++){const b=document.createElement('button');b.type='button';b.dataset.ball=String(i);b.textContent=balls[i].special?'ボール'+(i+1)+'：特大・オレンジ':'ボール'+(i+1)+'：'+sizeDefs[balls[i].size].label;b.setAttribute('aria-label',balls[i].special?'約3回に1回、天井から落ちる特大オレンジボール':'ボール'+(i+1)+'の大きさ。押すと次の大きさに変わります');b.disabled=Boolean(balls[i].special);if(!balls[i].special)b.onclick=()=>{const item=balls[i],ix=sizeOrder.indexOf(item.size);item.size=sizeOrder[(ix+1)%sizeOrder.length]};box.appendChild(b)}}
  function initializeMotion(ball,index){const g=gameGeometry(),floor=index===0?0:(index+Math.floor(Math.random()*(levelCount-1)))%(levelCount-1),dir=floor%2===0?1:-1,span=g.rightHole-g.leftHole,x=g.leftHole+Math.random()*span;if(ball.special){ball.motion={state:'entry',floor:0,x:g.leftHole,y:g.top-g.baseR*1.42*1.18,vy:0,dir:1,spin:0,bounceStart:0,bounceCount:0,fallFloor:0};return}ball.motion={state:'roll',floor,x,y:g.top+(floor+1)*g.row-(g.baseR*sizeDefs[ball.size].radius),vy:0,dir,spin:0,bounceStart:0,bounceCount:0,fallFloor:floor+1}}
- function randomizeBallSet(){if(ballCount===1){balls=[{size:sizeOrder[Math.floor(Math.random()*sizeOrder.length)],color:ballPalette[Math.floor(Math.random()*ballPalette.length)]}]}else{const special={size:'large',special:true,color:orangeBallColor};const others=Array.from({length:ballCount-1},(_,i)=>({size:sizeOrder[Math.floor(Math.random()*sizeOrder.length)],color:ballPalette[i]}));balls=[special,...others]}balls.forEach((ball,i)=>initializeMotion(ball,i));renderBallControls()}
+ function randomizeBallSet(){if(ballCount===1){balls=[{size:sizeOrder[Math.floor(Math.random()*sizeOrder.length)],color:ballPalette[Math.floor(Math.random()*ballPalette.length)]}]}else{const special={size:'large',special:true,color:orangeBallColor};const others=Array.from({length:ballCount-1},(_,i)=>({size:sizeOrder[Math.floor(Math.random()*sizeOrder.length)],color:ballPalette[i]}));balls=[special,...others]}balls.forEach((ball,i)=>{ball.pace=ball.special||balls.length===1?1:1+i*.035;initializeMotion(ball,i)});renderBallControls()}
  corner.content.querySelectorAll('[data-screen-control=ballCountOptions] button').forEach(b=>b.onclick=()=>{ballCount=Number(b.dataset.count);randomizeBallSet()});findControl('randomizeBalls').onclick=randomizeBallSet;randomizeBallSet();
  function startFall(ball,g,x,floor){const m=ball.motion,r=g.baseR*sizeDefs[ball.size].radius*(ball.special?1.18:1);m.state='fall';m.x=x;m.floor=floor;m.y=g.top+(floor+1)*g.row-r;m.vx=0;m.vy=0;m.fallFloor=floor+1}
  function bounceVelocity(m,nx,ny){const dot=m.vx*nx+m.vy*ny;if(dot<0){const e=.78;m.vx-=(1+e)*dot*nx;m.vy-=(1+e)*dot*ny;m.vx*=.985;m.vy*=.985} }
@@ -1372,18 +1537,23 @@ get('calligraphySample').then(value=>{
   }
  }
  function advanceBall(ball,dt,g,now){
-  const speedFactor=ball.size==='large'?1.5*1.3:1;
+  const speedFactor=(ball.size==='large'?1.5*1.3*1.2:1)*(ball.pace||1);
   dt*=speedFactor;
   const m=ball.motion,def=sizeDefs[ball.size];
   const r=g.baseR*def.radius*(ball.special?1.18:1);
   const rollSpeed=(g.rightHole-g.leftHole)/(2.65*slowFactor)*def.speed/(ball.special?3:1);
-  if(m.state==='roll')rollBall(ball,dt,g,r,rollSpeed);
+  if(advanceWarp(ball,dt,g,r,rollSpeed))return;
+  if(m.state==='roll'){
+   const from=m.x;
+   rollBall(ball,dt,g,r,rollSpeed);
+   enterWarp(ball,g,r,from);
+  }
   else if(m.state==='fall'||m.state==='entry'){
    if(m.state==='entry'){m.floor=-1;m.fallFloor=0}
    moveFallingBall(ball,dt,g);
   }
   else if(m.state==='bounce'){const elapsed=(now-m.bounceStart)/1000,duration=.52*slowFactor/speedFactor,progress=Math.min(1,elapsed/duration),lift=progress<.5?Math.sin(progress*Math.PI*2)*g.row*.14:Math.sin((progress-.5)*Math.PI*2)*g.row*.065;m.y=g.top+(m.floor+1)*g.row-r-lift;m.spin+=dt*2*m.dir;if(progress>=1){m.bounceCount++;if(m.bounceCount>=2){m.state='roll';m.dir=m.floor===levelCount-1||m.floor%2===0?1:-1;m.blocker=null;m.retry=0}else{m.bounceStart=now}}}}
- function drawBuilding(now){const g=gameGeometry();if(!g.w||!g.h)return;const{w,h,left,right,top,bottom,row,baseR,hole,leftHole,rightHole}=g;bctx.clearRect(0,0,w,h);const cx=(left+right)/2,cy=(top+bottom)/2;bctx.save();bctx.translate(cx,cy);bctx.rotate(Math.sin(now/1700)*.004);bctx.translate(-cx,-cy);bctx.lineCap='round';bctx.lineJoin='round';bctx.strokeStyle='#766a74';bctx.lineWidth=Math.max(3,w*.008);bctx.fillStyle='rgba(255,255,255,.22)';bctx.shadowColor='rgba(91,69,87,.13)';bctx.shadowBlur=14;bctx.beginPath();bctx.roundRect(left,top,right-left,bottom-top,Math.min(18,w*.035));bctx.fill();bctx.shadowBlur=0;bctx.beginPath();bctx.moveTo(left,top+12);bctx.lineTo(left,bottom-12);bctx.moveTo(right,top+12);bctx.lineTo(right,bottom-12);bctx.moveTo(left+hole,top);bctx.lineTo(right,top);bctx.stroke();for(let floor=0;floor<levelCount;floor++){const yy=top+(floor+1)*row,spans=gapsForFloor(floor,g);let cursor=left;for(const[a,b]of spans){if(a>cursor){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(a,yy);bctx.stroke()}cursor=Math.max(cursor,b)}if(cursor<right){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(right,yy);bctx.stroke()}}for(let i=0;i<obstacles.length;i++){const o=obstacles[i],ox=o.x*w,oy=o.y*h,selected=i===activeObstacle;bctx.save();bctx.translate(ox,oy);bctx.rotate(o.kind==='rod'?o.angle:0);bctx.shadowColor=selected?'rgba(205,112,151,.38)':'rgba(61,73,69,.2)';bctx.shadowBlur=selected?12:6;if(o.kind==='rod'){const len=w*.24;bctx.lineCap='round';bctx.strokeStyle=selected?'#b96f8d':'#6b7770';bctx.lineWidth=Math.max(7,baseR*.48);bctx.beginPath();bctx.moveTo(-len/2,0);bctx.lineTo(len/2,0);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff99';bctx.lineWidth=Math.max(1.5,baseR*.1);bctx.beginPath();bctx.moveTo(-len/2+3,-1);bctx.lineTo(len/2-3,-1);bctx.stroke()}else if(o.kind==='disk'){const rr=baseR*2.65,gr=bctx.createRadialGradient(-rr*.3,-rr*.35,rr*.08,0,0,rr);gr.addColorStop(0,'#fff7e5');gr.addColorStop(.55,selected?'#d9a2b7':'#aebfb5');gr.addColorStop(1,selected?'#a96d85':'#71867b');bctx.fillStyle=gr;bctx.strokeStyle=selected?'#b76f8c':'#65766d';bctx.lineWidth=2;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff88';bctx.lineWidth=1.5;bctx.beginPath();bctx.arc(-rr*.08,-rr*.08,rr*.72,-2.4,-.5);bctx.stroke()}else{const rr=baseR*3.2,thick=Math.max(8,baseR*.62);bctx.strokeStyle=selected?'#8f6377':'#535d5b';bctx.lineWidth=thick;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff70';bctx.lineWidth=Math.max(1,thick*.18);bctx.beginPath();bctx.arc(0,0,rr,Math.PI*1.05,Math.PI*1.75);bctx.stroke();bctx.fillStyle='#ffffff55';bctx.beginPath();bctx.arc(0,0,Math.max(2,thick*.17),0,Math.PI*2);bctx.fill()}bctx.restore()}for(const ball of balls.slice(0,ballCount)){const def=sizeDefs[ball.size],r=baseR*def.radius*(ball.special?1.18:1),m=ball.motion;if(!m)continue;const x=m.x,y=m.y;bctx.save();bctx.translate(x,y);bctx.rotate(m.spin);const grad=bctx.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r*1.25);grad.addColorStop(0,'#fffefb');grad.addColorStop(.34,ball.color[0]);grad.addColorStop(1,ball.color[1]);bctx.fillStyle=grad;bctx.strokeStyle=ball.color[1];bctx.lineWidth=Math.max(1.2,r*.09);bctx.beginPath();bctx.arc(0,0,r,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.strokeStyle='rgba(80,70,62,.42)';bctx.lineWidth=Math.max(1.2,r*.08);bctx.beginPath();bctx.arc(0,0,r*.64,-.65,.65);bctx.stroke();bctx.restore()}bctx.restore()}
+ function drawBuilding(now){const g=gameGeometry();if(!g.w||!g.h)return;const{w,h,left,right,top,bottom,row,baseR,hole,leftHole,rightHole}=g;bctx.clearRect(0,0,w,h);const cx=(left+right)/2,cy=(top+bottom)/2;bctx.save();bctx.translate(cx,cy);bctx.rotate(Math.sin(now/1700)*.004);bctx.translate(-cx,-cy);bctx.lineCap='round';bctx.lineJoin='round';bctx.strokeStyle='#766a74';bctx.lineWidth=Math.max(3,w*.008);bctx.fillStyle='rgba(255,255,255,.22)';bctx.shadowColor='rgba(91,69,87,.13)';bctx.shadowBlur=14;bctx.beginPath();bctx.roundRect(left,top,right-left,bottom-top,Math.min(18,w*.035));bctx.fill();bctx.shadowBlur=0;bctx.beginPath();bctx.moveTo(left,top+12);bctx.lineTo(left,bottom-12);bctx.moveTo(right,top+12);bctx.lineTo(right,bottom-12);bctx.moveTo(left+hole,top);bctx.lineTo(right,top);bctx.stroke();for(let floor=0;floor<levelCount;floor++){const yy=top+(floor+1)*row,spans=gapsForFloor(floor,g);let cursor=left;for(const[a,b]of spans){if(a>cursor){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(a,yy);bctx.stroke()}cursor=Math.max(cursor,b)}if(cursor<right){bctx.beginPath();bctx.moveTo(cursor,yy);bctx.lineTo(right,yy);bctx.stroke()}}for(let i=0;i<obstacles.length;i++){const o=obstacles[i],ox=o.x*w,oy=o.y*h,selected=i===activeObstacle;bctx.save();bctx.translate(ox,oy);bctx.rotate(o.kind==='rod'?o.angle:0);bctx.shadowColor=selected?'rgba(205,112,151,.38)':'rgba(61,73,69,.2)';bctx.shadowBlur=selected?12:6;if(o.kind==='rod'){const len=w*.24;bctx.lineCap='round';bctx.strokeStyle=selected?'#b96f8d':'#6b7770';bctx.lineWidth=Math.max(7,baseR*.48);bctx.beginPath();bctx.moveTo(-len/2,0);bctx.lineTo(len/2,0);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff99';bctx.lineWidth=Math.max(1.5,baseR*.1);bctx.beginPath();bctx.moveTo(-len/2+3,-1);bctx.lineTo(len/2-3,-1);bctx.stroke()}else if(o.kind==='disk'){const rr=baseR*2.65,gr=bctx.createRadialGradient(-rr*.3,-rr*.35,rr*.08,0,0,rr);gr.addColorStop(0,'#fff7e5');gr.addColorStop(.55,selected?'#d9a2b7':'#aebfb5');gr.addColorStop(1,selected?'#a96d85':'#71867b');bctx.fillStyle=gr;bctx.strokeStyle=selected?'#b76f8c':'#65766d';bctx.lineWidth=2;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff88';bctx.lineWidth=1.5;bctx.beginPath();bctx.arc(-rr*.08,-rr*.08,rr*.72,-2.4,-.5);bctx.stroke()}else{const rr=baseR*3.2,thick=Math.max(8,baseR*.62);bctx.strokeStyle=selected?'#8f6377':'#535d5b';bctx.lineWidth=thick;bctx.beginPath();bctx.arc(0,0,rr,0,Math.PI*2);bctx.stroke();bctx.shadowBlur=0;bctx.strokeStyle='#ffffff70';bctx.lineWidth=Math.max(1,thick*.18);bctx.beginPath();bctx.arc(0,0,rr,Math.PI*1.05,Math.PI*1.75);bctx.stroke();bctx.fillStyle='#ffffff55';bctx.beginPath();bctx.arc(0,0,Math.max(2,thick*.17),0,Math.PI*2);bctx.fill()}bctx.restore()}doors.forEach(door=>drawDoor(door,g));for(const ball of balls.slice(0,ballCount)){const def=sizeDefs[ball.size],r=baseR*def.radius*(ball.special?1.18:1),m=ball.motion;if(!m)continue;const x=m.x,y=m.y;bctx.save();clipWarpBall(m,g);bctx.translate(x,y);bctx.rotate(m.spin);const grad=bctx.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r*1.25);grad.addColorStop(0,'#fffefb');grad.addColorStop(.34,ball.color[0]);grad.addColorStop(1,ball.color[1]);bctx.fillStyle=grad;bctx.strokeStyle=ball.color[1];bctx.lineWidth=Math.max(1.2,r*.09);bctx.beginPath();bctx.arc(0,0,r,0,Math.PI*2);bctx.fill();bctx.stroke();bctx.strokeStyle='rgba(80,70,62,.42)';bctx.lineWidth=Math.max(1.2,r*.08);bctx.beginPath();bctx.arc(0,0,r*.64,-.65,.65);bctx.stroke();bctx.restore()}bctx.restore()}
  function animateBuilding(now){if(!buildingCanvas.isConnected)return;const g=gameGeometry(),dt=lastFrame?Math.min(.05,(now-lastFrame)/1000):.016;lastFrame=now;balls.slice(0,ballCount).forEach(ball=>advanceBall(ball,dt,g,now));drawBuilding(now);buildingRaf=requestAnimationFrame(animateBuilding)}if(!isWriting)buildingRaf=requestAnimationFrame(animateBuilding);
  // Drawing and calligraphy.
  let drawingDirty=false,loadingDrawing=false;
