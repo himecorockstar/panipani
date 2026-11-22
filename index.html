@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap" rel="stylesheet">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#fff0f5">
-<title>パニックパニック</title>
+<title>パニックDEパニック | Panic DE Panic</title>
 <style>
 :root{--ink:#394b49;--muted:#687b76;--pink:#c47c98;--soft:#f2f8f5;--top-green:#dcebe3;--shadow:0 14px 38px rgba(63,91,83,.10)}
 *{box-sizing:border-box}body.writing-mode{overflow:hidden}body{margin:0;min-height:100vh;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:radial-gradient(ellipse at 20% 0%,#e1eee6 0,transparent 40%),linear-gradient(160deg,#edf5ef,#dcebe3 65%,#e7f0e8)}button{font:inherit;color:inherit}.app{width:min(100%,560px);max-width:560px;margin-inline:auto;min-height:100vh;padding:22px 19px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column}.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;margin:4px 0 22px}.top:before{content:"";grid-column:1;grid-row:1}.brand{grid-column:2;grid-row:1;display:flex;gap:11px;align-items:center;min-width:0;width:auto;padding:0;justify-content:center}.brand-name{font-weight:800;letter-spacing:.015em;font-size:clamp(23px,6.2vw,33px);white-space:nowrap;text-align:center;color:#394b49;margin:0;line-height:1.2}.brand-copy{text-align:center;max-width:240px;min-width:0}.brand-en{margin:2px 0 0;color:#687b76;font-size:13px;font-weight:600;letter-spacing:.04em;line-height:1.2}.panic-kicker{margin:0 0 3px;color:#ca858d;font-size:clamp(16px,6vw,30px);font-weight:650;letter-spacing:0;line-height:1.2;white-space:normal;text-align:center;overflow-wrap:anywhere;max-width:100%}.nonmedical{margin:4px 0 0;color:#667873;font-size:11px;line-height:1.3;white-space:nowrap}.top-actions{grid-column:3;grid-row:1;justify-self:end;display:flex;flex-direction:column;gap:4px;align-items:stretch;width:82px}.help-top{border:1px solid #89a798;border-radius:999px;background:#fff8;box-shadow:0 4px 16px #70506012;padding:7px 4px;color:#526a64;font-size:11px;line-height:1.15;cursor:pointer;width:82px;height:36px;display:grid;place-items:center}.language-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.language-choice{border:1px solid #dcebe6;background:#fff;border-radius:13px;padding:12px 9px;font-size:15px}.language-choice.active{background:#d982a7;color:white}.language-top{border:1px solid #89a798;border-radius:999px;background:var(--top-green);padding:7px 4px;color:#526a64;font-size:11px;line-height:1.15;cursor:pointer;width:82px;height:36px;display:grid;place-items:center;white-space:nowrap}.stack{display:grid;gap:13px}.card{min-height:96px;border:1px solid #ffffffde;border-radius:24px;padding:13px 13px 13px 17px;background:linear-gradient(110deg,#fffdfd,#f7faf8);box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;transition:transform .16s,box-shadow .16s;-webkit-tap-highlight-color:transparent}.card:active{transform:scale(.99)}.card-main{display:flex;align-items:center;gap:15px;flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:0;cursor:pointer}.icon{width:54px;height:54px;flex:0 0 54px;border-radius:19px;display:grid;place-items:center;font-size:25px;background:#f5e9ed}.card:nth-child(2) .icon{background:#eaf2fb}.card:nth-child(3) .icon{background:#eaf1ef}.whowatch-card .icon{background:#ffe3bd;color:#e98a83}.card-copy{flex:1}.card-title{display:block;font-size:19px;font-weight:730;letter-spacing:.025em;line-height:1.2}.card-desc{display:block;color:var(--muted);font-size:13px;line-height:1.35;margin-top:4px;min-height:2.7em}.info{width:36px;height:36px;flex:0 0 36px;border:0;border-radius:50%;background:#f7edf2;color:#98758a;font-weight:700;cursor:pointer}.note{margin:19px 8px 0;text-align:center;color:#948595;font-size:clamp(15px,4.2vw,21px);line-height:1.4}.footer{width:100%;margin-top:auto;padding-top:24px;text-align:center;font-size:11px;color:#ad9eae}.footer strong{color:#94758c;font-weight:600}.app-version{display:block;margin-top:4px;font-size:10px;color:#a99ca8}.presented-by{display:block;width:100%;max-width:100%;margin:5px auto 0;font-size:clamp(16px,6vw,30px);line-height:1.2;white-space:normal;overflow-wrap:anywhere;text-align:center;color:#173b72;font-weight:650}
@@ -27,11 +27,19 @@
 .ball-controls:not([hidden]){max-height:43dvh;overflow-y:auto;flex-shrink:0;overscroll-behavior:contain;touch-action:pan-y}
 .writing-stamp-buttons{display:grid;gap:8px}
 .writing-stamp-buttons button{width:100%;min-height:42px}
+.brand-en{font-size:clamp(14px,4vw,22px)}
+.featured-programs{display:grid;gap:16px;margin-top:14px}
+.featured-program{padding:12px;border:1px solid #d2e2d9;border-radius:16px;background:#fff}
+.featured-program img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#e8f0eb}
+.featured-program h3{margin:10px 0;font-size:16px}
+.featured-program button[aria-pressed="true"]{background:#cce5d6;color:#274d38}
+.featured-actions{position:sticky;top:0;z-index:2;padding:8px 0;background:#f2f7f4}
+.featured-player:empty{display:none}
 </style>
 </head>
 <body>
 <main class="app">
- <header class="top"><div class="brand"><div class="brand-copy"><h1 class="brand-name">パニックパニック</h1><p class="brand-en">Panic Panic</p><p class="nonmedical">（医療機器用品ではありません）</p><div class="cover-controls"><button id="helpAll" type="button">読んでね</button><button id="languageButton" type="button" data-user-content>言語/language</button><button id="stopEverything" type="button">全停止（60分後自動）</button></div></div></div></header>
+ <header class="top"><div class="brand"><div class="brand-copy"><h1 class="brand-name" data-user-content>パニックDEパニック</h1><p class="brand-en" lang="en" data-user-content>Panic DE Panic</p><p class="nonmedical">（医療機器用品ではありません）</p><div class="cover-controls"><button id="helpAll" type="button">読んでね</button><button id="languageButton" type="button" data-user-content>言語/language</button><button id="stopEverything" type="button">全停止（60分後自動）</button></div></div></div></header>
  <section class="stack" aria-label="メニュー">
   <div class="card"><button class="card-main" data-mode="listen" type="button"><span class="icon" aria-hidden="true">♫</span><span class="card-copy"><span class="card-title">聴く</span><span class="card-desc">YouTubeの音・好きな曲を再生</span></span></button><button class="info" data-help="listen" aria-label="聴くの説明">?</button></div>
   <div class="card"><button class="card-main" data-mode="see" type="button"><span class="icon" aria-hidden="true">☁</span><span class="card-copy"><span class="card-title">観る</span><span class="card-desc" id="photoDesc">写真を表示・スワイプで選択</span></span></button><button class="info" data-help="see" aria-label="観るの説明">?</button></div>
@@ -41,7 +49,7 @@
   <div class="card whowatch-card"><button class="card-main" data-mode="whowatch" type="button"><span class="icon" aria-hidden="true">♥</span><span class="card-copy"><span class="card-title">ふわっち</span><span class="card-desc">ふわっちを開く</span></span></button></div>
  </section>
  <p class="note"><strong>これは玩具です。</strong>診断・治療・診察を行うものではありません。</p>
- <footer class="footer"><small class="app-version">ver. 1.062</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
+ <footer class="footer"><small class="app-version">ver. 1.063</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
 </main>
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><section class="sheet"><button class="close" id="closeBtn" aria-label="閉じる">×</button><div id="sheetContent"></div></section></div>
 <script>
@@ -55,6 +63,10 @@ de:{"一時停止":"Pause","リピート：オフ":"Wiederholen: aus","リピー
 vi:{"一時停止":"Tạm dừng","リピート：オフ":"Lặp lại: Tắt","リピート：オン":"Lặp lại: Bật","再生位置":"Vị trí phát","再生できませんでした":"Không thể phát bài này","アプリの使い方":"Cách sử dụng ứng dụng","聴く：YouTube動画を選んで再生します。動画名やURLは「YouTube動画を変更」から差し替えられます。「わたし好みの音楽」にはスマホ内の曲を1曲登録できます。":"Nghe: Chọn video YouTube để phát. Đổi tên hoặc liên kết trong “Đổi video YouTube”. Bạn có thể lưu một bài nhạc trong điện thoại ở “Nhạc tôi thích”.","観る：1回タップでは何も起きません。2回タップで拡大を元に戻し、左右のスワイプで写真を切り替えます。二本指で拡大できます。観るボタンを2秒長押しすると写真・動画を登録できます。":"Xem: Chạm một lần không làm gì. Chạm hai lần để trở về cỡ ban đầu; vuốt trái/phải để đổi ảnh; dùng hai ngón tay để phóng to. Nhấn giữ nút Xem 2 giây để thêm ảnh.","表紙の「感じる　落ち着く動画」「感じる　書道で落ち着く」から直接開けます。":"Mở hoạt ảnh bóng hoặc thư pháp bằng hai nút Cảm nhận trên trang bìa.","iPhoneでホーム画面にアイコンを作る":"Thêm biểu tượng vào Màn hình chính iPhone","公開ページをSafariで開きます。":"Mở trang công khai bằng Safari.","共有ボタン（四角から上向き矢印）を押します。":"Chạm nút Chia sẻ (hình vuông có mũi tên lên).","メニューから「ホーム画面に追加」を選び、「追加」を押します。項目が見つからない場合は、共有メニューの「アクションを編集」を確認してください。":"Chọn “Thêm vào Màn hình chính”, rồi chạm “Thêm”. Nếu không thấy, hãy kiểm tra “Sửa tác vụ” trong menu Chia sẻ.","Androidでホーム画面にアイコンを作る":"Thêm biểu tượng vào Màn hình chính Android","公開ページをChromeで開きます。":"Mở trang công khai bằng Chrome.","右上の「︙」を押し、「インストールとショートカットを作成」を選びます。":"Chạm “︙” ở góc trên bên phải và chọn “Cài đặt và tạo lối tắt”.","「ショートカットを作成」または「インストール」を選び、「追加」を押します。端末やChromeの版によって表示名が異なる場合があります。":"Chọn “Tạo lối tắt” hoặc “Cài đặt”, rồi chạm “Thêm”. Tên mục có thể khác theo thiết bị và phiên bản Chrome.","音が出ないとき":"Khi không có âm thanh","iPhone：公開ページをSafariで開き直して、再生ボタンを押してください。":"iPhone: Mở lại trang công khai bằng Safari và chạm Phát.","Android：アプリ内で開いていて音が出ない場合、上部の黒い三つ星（︙）を押し、「オリジナルのブラウザで開く」または「ブラウザで開く」を選び、Chromeなどで開き直してください。表示名やメニュー位置はアプリの版で異なることがあります。":"Android: Nếu không có tiếng trong ứng dụng khác, chạm menu ba chấm (︙), chọn “Mở bằng trình duyệt” rồi mở lại bằng Chrome. Tên và vị trí menu có thể khác.","ふわっちからの戻り方":"Cách quay lại từ Fuwatch","ふわっちが新しいタブで開いた場合は、ブラウザのタブ一覧から「パニックパニック」を選びます。同じタブで開いた場合は、ブラウザの「戻る」矢印を押します。":"Fuwatch mở trong cùng một thẻ. Xem xong, nhấn mũi tên Quay lại của trình duyệt để trở về ứng dụng.","YouTubeからの戻り方":"Cách quay lại từ YouTube","ブラウザ内の動画画面は、画面内の「戻る」を押します。YouTubeアプリや別ページに移った場合は、ブラウザの「戻る」矢印か、端末のアプリ切替画面から元のブラウザに戻ります。":"Video phát trong ứng dụng. Nhấn nút Quay lại trên màn hình để trở về. Nếu chọn “Mở trong YouTube”, hãy dùng mũi tên Quay lại hoặc trình chuyển ứng dụng.","ご注意：":"Lưu ý:","これは玩具です。医療機器ではなく、診断・治療・診察を行いません。動作、保存、通信、音声再生、表示内容、気分への効果などについて一切保証しません。登録した写真と曲はこの端末のブラウザ内に保存されます。YouTube動画の再生にはインターネット通信が必要です。別の端末やブラウザには登録内容が自動で移りません。":"Đây là đồ chơi, không phải thiết bị y tế và không chẩn đoán, điều trị hay khám bệnh. Không bảo đảm hoạt động, lưu trữ, kết nối, âm thanh, nội dung hoặc tác động tâm trạng. Ảnh và nhạc được lưu trong trình duyệt trên thiết bị này. YouTube cần Internet; dữ liệu không tự chuyển sang thiết bị khác.","研究資料・出典を読む":"Đọc nghiên cứu và nguồn",'コース変更':'Đổi đường đi','変更終了':'Xong','設定':'Cài đặt','書道の設定':'Cài đặt thư pháp','色替え':'Đổi màu','砂色':'Màu cát','白地・黒墨':'Nền trắng, mực đen','消去':'Xóa','お手本表示：':'Mẫu:','（押すと変更）':'(Chạm để sửa)','お手本の文字':'Chữ mẫu','お手本の文字を入力':'Nhập chữ mẫu','お手本記入':'Viết chữ mẫu','開始':'Bắt đầu','（医療機器用品ではありません）':'(Không phải thiết bị y tế)','読んでね':'Hướng dẫn','言語':'Ngôn ngữ','聴く':'Nghe','観る':'Xem','感じる':'Cảm nhận','落ち着く動画':'Video thư giãn','書道で落ち着く':'Thư giãn bằng thư pháp','YouTubeの音・好きな曲を再生':'Phát YouTube hoặc nhạc yêu thích','写真を表示・スワイプで選択':'Xem và vuốt để chọn ảnh','パニック障害を乗り越えました':'Tôi đã vượt qua chứng hoảng sợ','YouTube動画を開く':'Mở video YouTube','ふわっち':'Fuwatch','ふわっちを開く':'Mở Fuwatch','これは玩具です。':'Đây là đồ chơi.','診断・治療・診察を行うものではありません。':'Ứng dụng không chẩn đoán hay điều trị.','戻る':'Quay lại','閉じる':'Đóng','写真・動画を登録':'Thêm ảnh','写真を追加':'Thêm ảnh','写真・動画を登録・編集':'Thêm hoặc sửa ảnh','この画面を消す':'Xóa màn hình này','YouTube動画を変更':'Đổi video YouTube','わたし好みの音楽':'Nhạc tôi thích','別の曲を登録':'Thêm bài khác','保存する':'Lưu','貼り付け':'Dán','研究資料・出典を読む':'Đọc nghiên cứu và nguồn','研究資料':'Thông tin nghiên cứu','音が出ないとき':'Khi không có âm thanh','言語を選ぶ':'Chọn ngôn ngữ','アプリの使い方':'Cách dùng ứng dụng','YouTubeで再生':'Phát trên YouTube'},
 hi:{"一時停止":"रोकें","リピート：オフ":"दोहराएँ: बंद","リピート：オン":"दोहराएँ: चालू","再生位置":"प्लेबैक स्थिति","再生できませんでした":"यह गीत नहीं चल सका","アプリの使い方":"ऐप का उपयोग कैसे करें","聴く：YouTube動画を選んで再生します。動画名やURLは「YouTube動画を変更」から差し替えられます。「わたし好みの音楽」にはスマホ内の曲を1曲登録できます。":"सुनें: चलाने के लिए YouTube वीडियो चुनें। “YouTube वीडियो बदलें” से नाम या लिंक बदलें। “मेरी पसंद का संगीत” में फ़ोन का एक गीत जोड़ सकते हैं।","観る：1回タップでは何も起きません。2回タップで拡大を元に戻し、左右のスワイプで写真を切り替えます。二本指で拡大できます。観るボタンを2秒長押しすると写真・動画を登録できます。":"देखें: एक बार टैप करने पर कुछ नहीं होगा। दो बार टैप करके आकार सामान्य करें; बाएँ/दाएँ स्वाइप से फ़ोटो बदलें; दो उँगलियों से ज़ूम करें। फ़ोटो जोड़ने के लिए देखें बटन 2 सेकंड दबाएँ।","表紙の「感じる　落ち着く動画」「感じる　書道で落ち着く」から直接開けます。":"मुखपृष्ठ के दो “महसूस करें” बटनों से गेंदों का ऐनिमेशन या सुलेख खोलें।","iPhoneでホーム画面にアイコンを作る":"iPhone होम स्क्रीन पर आइकन जोड़ें","公開ページをSafariで開きます。":"सार्वजनिक पेज Safari में खोलें।","共有ボタン（四角から上向き矢印）を押します。":"शेयर बटन (ऊपर तीर वाला चौकोर) दबाएँ।","メニューから「ホーム画面に追加」を選び、「追加」を押します。項目が見つからない場合は、共有メニューの「アクションを編集」を確認してください。":"“होम स्क्रीन में जोड़ें” चुनें, फिर “जोड़ें” दबाएँ। विकल्प न मिले तो शेयर मेन्यू में “ऐक्शन संपादित करें” देखें।","Androidでホーム画面にアイコンを作る":"Android होम स्क्रीन पर आइकन जोड़ें","公開ページをChromeで開きます。":"सार्वजनिक पेज Chrome में खोलें।","右上の「︙」を押し、「インストールとショートカットを作成」を選びます。":"ऊपर दाईं ओर “︙” दबाकर “इंस्टॉल और शॉर्टकट बनाएँ” चुनें।","「ショートカットを作成」または「インストール」を選び、「追加」を押します。端末やChromeの版によって表示名が異なる場合があります。":"“शॉर्टकट बनाएँ” या “इंस्टॉल” चुनें और “जोड़ें” दबाएँ। नाम डिवाइस और Chrome संस्करण के अनुसार बदल सकता है।","音が出ないとき":"आवाज़ न आए तो","iPhone：公開ページをSafariで開き直して、再生ボタンを押してください。":"iPhone: सार्वजनिक पेज Safari में फिर खोलें और चलाएँ दबाएँ।","Android：アプリ内で開いていて音が出ない場合、上部の黒い三つ星（︙）を押し、「オリジナルのブラウザで開く」または「ブラウザで開く」を選び、Chromeなどで開き直してください。表示名やメニュー位置はアプリの版で異なることがあります。":"Android: दूसरे ऐप में आवाज़ न आए तो ऊपर दाईं ओर तीन-बिंदु मेन्यू (︙) दबाएँ, “ब्राउज़र में खोलें” चुनें और Chrome में फिर खोलें। मेन्यू के नाम और स्थान अलग हो सकते हैं।","ふわっちからの戻り方":"Fuwatch से वापस कैसे आएँ","ふわっちが新しいタブで開いた場合は、ブラウザのタブ一覧から「パニックパニック」を選びます。同じタブで開いた場合は、ブラウザの「戻る」矢印を押します。":"Fuwatch उसी टैब में खुलेगा। देखने के बाद ऐप पर लौटने के लिए ब्राउज़र का पीछे वाला तीर दबाएँ।","YouTubeからの戻り方":"YouTube से वापस कैसे आएँ","ブラウザ内の動画画面は、画面内の「戻る」を押します。YouTubeアプリや別ページに移った場合は、ブラウザの「戻る」矢印か、端末のアプリ切替画面から元のブラウザに戻ります。":"वीडियो ऐप के अंदर चलता है। लौटने के लिए स्क्रीन पर “वापस” दबाएँ। “YouTube में खोलें” चुनने पर ब्राउज़र का पीछे तीर या ऐप स्विचर इस्तेमाल करें।","ご注意：":"ध्यान दें:","これは玩具です。医療機器ではなく、診断・治療・診察を行いません。動作、保存、通信、音声再生、表示内容、気分への効果などについて一切保証しません。登録した写真と曲はこの端末のブラウザ内に保存されます。YouTube動画の再生にはインターネット通信が必要です。別の端末やブラウザには登録内容が自動で移りません。":"यह खिलौना है, चिकित्सा उपकरण नहीं। यह निदान, उपचार या चिकित्सा-जाँच नहीं करता। संचालन, संग्रहण, कनेक्शन, ध्वनि, सामग्री या मनोदशा पर प्रभाव की कोई गारंटी नहीं है। फ़ोटो और संगीत इसी डिवाइस के ब्राउज़र में रहते हैं। YouTube के लिए इंटरनेट चाहिए; डेटा दूसरे डिवाइस में अपने-आप नहीं जाता।","研究資料・出典を読む":"शोध और स्रोत पढ़ें",'コース変更':'मार्ग बदलें','変更終了':'पूरा हुआ','設定':'सेटिंग्स','書道の設定':'सुलेख सेटिंग्स','色替え':'रंग बदलें','砂色':'रेत का रंग','白地・黒墨':'सफेद पृष्ठ, काली स्याही','消去':'मिटाएँ','お手本表示：':'नमूना:','（押すと変更）':'(बदलने के लिए दबाएँ)','お手本の文字':'नमूना पाठ','お手本の文字を入力':'नमूना पाठ दर्ज करें','お手本記入':'नमूना लिखें','開始':'शुरू करें','（医療機器用品ではありません）':'(यह चिकित्सा उपकरण नहीं है)','読んでね':'उपयोग निर्देश','言語':'भाषा','聴く':'सुनें','観る':'देखें','感じる':'महसूस करें','落ち着く動画':'शांत करने वाला वीडियो','書道で落ち着く':'सुलेख से शांति','YouTubeの音・好きな曲を再生':'YouTube या अपना पसंदीदा संगीत चलाएँ','写真を表示・スワイプで選択':'तस्वीरें देखें और स्वाइप करके चुनें','パニック障害を乗り越えました':'मैंने पैनिक डिसऑर्डर पर काबू पाया','YouTube動画を開く':'YouTube वीडियो खोलें','ふわっち':'Fuwatch','ふわっちを開く':'Fuwatch खोलें','これは玩具です。':'यह एक खिलौना है।','診断・治療・診察を行うものではありません。':'यह निदान या उपचार प्रदान नहीं करता।','戻る':'वापस','閉じる':'बंद करें','写真・動画を登録':'तस्वीरें जोड़ें','写真を追加':'तस्वीरें जोड़ें','写真・動画を登録・編集':'तस्वीरें जोड़ें या संपादित करें','この画面を消す':'यह स्क्रीन साफ़ करें','YouTube動画を変更':'YouTube वीडियो बदलें','わたし好みの音楽':'मेरा पसंदीदा संगीत','別の曲を登録':'दूसरा गीत जोड़ें','保存する':'सहेजें','貼り付け':'चिपकाएँ','研究資料・出典を読む':'शोध और स्रोत पढ़ें','研究資料':'शोध जानकारी','音が出ないとき':'आवाज़ न आने पर','言語を選ぶ':'भाषा चुनें','アプリの使い方':'ऐप का उपयोग','YouTubeで再生':'YouTube पर चलाएँ'}};
 const localizedRows=[
+["番組を選ぶ", "Select a video", "选择节目", "동영상 선택", "Choisir la vidéo", "Video auswählen", "Chọn video", "वीडियो चुनें"],
+["スタート", "Start", "开始", "시작", "Démarrer", "Starten", "Bắt đầu", "शुरू करें"],
+["終了", "Stop", "结束", "종료", "Arrêter", "Beenden", "Dừng", "बंद करें"],
+
 ["ワープドア", "Warp doors", "传送门", "워프 문", "Portes de téléportation", "Teleporttüren", "Cửa dịch chuyển", "टेलीपोर्ट दरवाज़े"],
 ["タップで選んだ物を1つ削除", "Delete the one object you tapped", "删除点选的单个物体", "탭으로 선택한 물체 하나 삭제", "Supprimer l’objet sélectionné", "Das angetippte Objekt löschen", "Xóa một vật đã chọn", "छुई गई एक वस्तु हटाएँ"],
 ["書道初める", "Start writing", "开始书写", "서예 시작", "Commencer à écrire", "Mit dem Schreiben beginnen", "Bắt đầu viết", "लिखना शुरू करें"],
@@ -732,7 +744,6 @@ function setLanguage(lang){
  currentLang=lang;
  try{localStorage.setItem('panicpanicLanguage',lang)}catch{}
  document.documentElement.lang=LANGS[lang][1];
- document.title=tr('パニックパニック');
  translateTree();
 }
 function openLanguage(){const options=Object.entries(LANGS).map(([id,[name]])=>`<button type="button" class="language-choice ${id===currentLang?'active':''}" data-lang="${id}">${name}</button>`).join('');const findControl=show(`<h2 id="sheetTitle">言語を選ぶ</h2><div class="language-grid">${options}</div><button class="stop" id="languageDone">戻る</button>`);activeCorner.content.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{setLanguage(b.dataset.lang);close()});findControl('languageDone').onclick=close;translateTree(activeCorner.content)}
@@ -1218,12 +1229,74 @@ async function showGallery(initialIndex=0){
  }
  stage.addEventListener('pointerup',e=>pointerEnd(e));stage.addEventListener('pointercancel',e=>pointerEnd(e,true));
 }
+const FEATURED_PROGRAMS=[
+ {id:'kh_NYYDH8uA',title:'パニック障害を乗り越えました'},
+ {id:'a391NFrpbXQ',title:'【パニック克服法】千人から感謝の声'},
+];
+const FEATURED_PROGRAM_LIMIT=10;
 function playFeaturedYouTube(){
- const url='https://www.youtube.com/watch?v=kh_NYYDH8uA',parsed=parseYouTube(url);if(!parsed)return;
- const findControl=show(`<h2 id="sheetTitle">パニック障害を乗り越えました</h2><iframe class="yt-player" id="featuredYtFrame" title="パニック障害を乗り越えました" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="actions"><button class="secondary" id="featuredYtExternal">YouTubeで開く</button><button class="stop" id="featuredYtBack">戻る</button></div><p class="help">自動再生されない場合は、動画の再生マークを押してください。</p>`);
- findControl('featuredYtFrame').src=parsed.embed+(parsed.embed.includes('?')?'&':'?')+'autoplay=1&playsinline=1';
- findControl('featuredYtExternal').onclick=()=>window.location.assign(parsed.external);
- findControl('featuredYtBack').onclick=close;
+ const findControl=show(`<h2 id="sheetTitle">パニック障害を乗り越えました</h2>
+ <div class="featured-player" id="featuredPlayer"></div>
+ <div class="actions featured-actions">
+  <button class="primary" id="featuredStart" type="button" disabled>スタート</button>
+  <button class="secondary" id="featuredStop" type="button" disabled>終了</button>
+  <button class="stop" id="featuredBack" type="button">戻る</button>
+ </div>
+ <div class="featured-programs" id="featuredPrograms"></div>`);
+ const panel=activeCorner.panel;
+ panel.classList.add('listen-view');
+ const player=findControl('featuredPlayer'),list=findControl('featuredPrograms');
+ const start=findControl('featuredStart'),stop=findControl('featuredStop');
+ const choices=[];
+ let selected=null,playing=null;
+ for(const program of FEATURED_PROGRAMS.slice(0,FEATURED_PROGRAM_LIMIT)){
+  const card=document.createElement('article');
+  card.className='featured-program';
+  const image=document.createElement('img');
+  image.src='https://i.ytimg.com/vi/'+program.id+'/hqdefault.jpg';
+  image.loading='lazy';
+  image.alt='';
+  image.onerror=()=>image.remove();
+  const title=document.createElement('h3');
+  title.textContent=program.title;
+  title.setAttribute('data-user-content','');
+  const choose=document.createElement('button');
+  choose.className='secondary';
+  choose.type='button';
+  choose.textContent='番組を選ぶ';
+  choose.setAttribute('aria-pressed','false');
+  choose.onclick=()=>{
+   selected=program;
+   for(const [entry,button] of choices)button.setAttribute('aria-pressed',String(entry===selected));
+   start.disabled=selected===playing;
+   start.focus();
+   start.scrollIntoView({block:'nearest'});
+  };
+  choices.push([program,choose]);
+  card.append(image,title,choose);
+  list.appendChild(card);
+ }
+ start.onclick=()=>{
+  if(!selected||selected===playing)return;
+  const video=document.createElement('iframe');
+  video.className='yt-player';
+  video.title=selected.title;
+  video.allow='autoplay; encrypted-media; picture-in-picture';
+  video.allowFullscreen=true;
+  video.referrerPolicy='strict-origin-when-cross-origin';
+  video.src='https://www.youtube-nocookie.com/embed/'+selected.id+'?autoplay=1&playsinline=1';
+  player.replaceChildren(video);
+  playing=selected;
+  start.disabled=true;
+  stop.disabled=false;
+ };
+ stop.onclick=()=>{
+  player.replaceChildren();
+  playing=null;
+  stop.disabled=true;
+  start.disabled=!selected;
+ };
+ findControl('featuredBack').onclick=close;
 }
 function bindMain(btn,mode){let timer=null,held=false;btn.addEventListener('pointerdown',()=>{held=false;if(mode==='see')timer=setTimeout(()=>{held=true;openCorner('see',registerPhotos,true)},2000)});['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>clearTimeout(timer)));btn.addEventListener('contextmenu',e=>e.preventDefault());btn.addEventListener('click',e=>{if(held){e.preventDefault();held=false;return}if(mode==='listen')openCorner('listen',openListen);if(mode==='see')openCorner('see',showGallery);if(mode==='feelBall')openCorner('feelBall',()=>startFeel('ball'));if(mode==='feelWriting')openCorner('feelWriting',()=>startFeel('writing'));if(mode==='youtube')openCorner('youtube',playFeaturedYouTube);if(mode==='whowatch')window.location.assign('https://whowatch.tv')})}
 document.querySelectorAll('.card-main').forEach(b=>bindMain(b,b.dataset.mode));
