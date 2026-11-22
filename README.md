@@ -1,4 +1,4 @@
-# パニックDEパニック（ver. 1.063）
+# パニックDEパニック（ver. 1.064）
 
 GitHub Pages用の単一HTMLアプリです。ZIPを展開し、中の `index.html` と `README.md` をリポジトリの一番上にアップロードしてください。
 

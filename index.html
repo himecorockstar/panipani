@@ -35,6 +35,24 @@
 .featured-program button[aria-pressed="true"]{background:#cce5d6;color:#274d38}
 .featured-actions{position:sticky;top:0;z-index:2;padding:8px 0;background:#f2f7f4}
 .featured-player:empty{display:none}
+/* All app screens use the same viewport-level return control. */
+:root{--button-outline:#8da99b;--back-fill:#d8efdf;--back-ink:#284a39}
+button{border:1px solid var(--button-outline)!important}
+button:focus-visible{outline:2px solid #37765a;outline-offset:2px}
+.screen-back{
+ position:absolute;z-index:10;
+ top:calc(8px + env(safe-area-inset-top));
+ right:calc(12px + env(safe-area-inset-right));
+ inline-size:96px;min-block-size:42px;padding:4px 8px;
+ border-radius:999px;font-size:13px;font-weight:700;line-height:1.15;
+ background:var(--back-fill);color:var(--back-ink);
+ box-shadow:0 2px 5px #263e3526;cursor:pointer;
+}
+.screen-back-original[hidden]{display:none!important}
+.overlay.listen-view .sheet{padding-top:calc(59px + env(safe-area-inset-top))}
+.overlay.game-view .sheet{padding-top:calc(55px + env(safe-area-inset-top))}
+.overlay.full-view .sheet:has(.photo-empty){padding-top:calc(36px + env(safe-area-inset-top))}
+.overlay:not(.listen-view):not(.game-view):not(.full-view){padding-top:calc(59px + env(safe-area-inset-top))}
 </style>
 </head>
 <body>
@@ -49,9 +67,9 @@
   <div class="card whowatch-card"><button class="card-main" data-mode="whowatch" type="button"><span class="icon" aria-hidden="true">♥</span><span class="card-copy"><span class="card-title">ふわっち</span><span class="card-desc">ふわっちを開く</span></span></button></div>
  </section>
  <p class="note"><strong>これは玩具です。</strong>診断・治療・診察を行うものではありません。</p>
- <footer class="footer"><small class="app-version">ver. 1.063</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
+ <footer class="footer"><small class="app-version">ver. 1.064</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
 </main>
-<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><section class="sheet"><button class="close" id="closeBtn" aria-label="閉じる">×</button><div id="sheetContent"></div></section></div>
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><button class="screen-back" id="closeBtn" type="button">戻る</button><section class="sheet"><div id="sheetContent"></div></section></div>
 <script>
 (()=>{'use strict';const LANGS={ja:['日本語','ja'],en:['English','en'],zh:['中文（简体）','zh-CN'],ko:['한국어','ko'],fr:['Français','fr'],de:['Deutsch','de'],vi:['Tiếng Việt','vi'],hi:['हिन्दी','hi']};
 const TXT={
@@ -899,18 +917,20 @@ function show(html,full=false){
  resetCorner(activeCorner);
  panel.classList.remove('game-view','listen-view');
  const closeBtn=activeCorner.closeButton;
- closeBtn.textContent='戻る';
- closeBtn.classList.toggle('close-hidden',/<button\b[^>]*>[^<]*戻る/.test(html));
- closeBtn.classList.add('close-back');
  content.innerHTML=html;
  const control=bindScreenControls(activeCorner);
- for(const button of content.querySelectorAll('button')){
-  const text=button.textContent.trim();
-  if(text==='閉じる'||text.includes('戻る'))button.classList.add('uniform-back');
+ const backAction=[...content.querySelectorAll('button')].find(button=>{
+  const label=button.textContent.trim();
+  return label==='閉じる'||label==='戻る'||label.endsWith('へ戻る');
+ });
+ if(backAction){
+  backAction.hidden=true;
+  backAction.classList.add('screen-back-original');
  }
+ closeBtn.onclick=backAction?()=>backAction.click():close;
  panel.classList.toggle('full-view',full);
  translateTree(panel);
- (closeBtn.classList.contains('close-hidden')?content.querySelector('button'):closeBtn)?.focus();
+ closeBtn.focus({preventScroll:true});
  return control;
 }
 function close(){
