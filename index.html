@@ -30,24 +30,29 @@
 .brand-en{font-size:clamp(14px,4vw,22px)}
 .featured-programs{display:grid;gap:16px;margin-top:14px}
 .featured-program{padding:12px;border:1px solid #d2e2d9;border-radius:16px;background:#fff}
-.featured-program img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#e8f0eb}
-.featured-program h3{margin:10px 0;font-size:16px}
-.featured-program button[aria-pressed="true"]{background:#cce5d6;color:#274d38}
-.featured-actions{position:sticky;top:0;z-index:2;padding:8px 0;background:#f2f7f4}
-.featured-player:empty{display:none}
+.featured-program h3{margin:0 0 8px;font-size:16px}
+.featured-controls{display:flex;gap:8px;margin-bottom:6px}
+.featured-controls button{min-width:48px;min-height:44px;border-radius:12px;background:#405b4d;color:#fff;font-size:20px}
+.featured-controls button:disabled{background:#697a72}
+.featured-frame{overflow:hidden;aspect-ratio:16/9;border:1px solid #d2e2d9;border-radius:10px;background:#e8f0eb}
+.featured-frame.is-playing{border-color:#e47a19}
+.featured-frame img,.featured-frame iframe{display:block;width:100%;height:100%;border-radius:0}
+.featured-frame img{object-fit:cover}
+
 /* All app screens use the same viewport-level return control. */
 :root{--button-outline:#8da99b;--back-fill:#d8efdf;--back-ink:#284a39}
 button{border:1px solid var(--button-outline)!important}
 button:focus-visible{outline:2px solid #37765a;outline-offset:2px}
-.screen-back{
- position:absolute;z-index:10;
- top:calc(8px + env(safe-area-inset-top));
- right:calc(12px + env(safe-area-inset-right));
+.screen-back,.writing-settings-button{
  inline-size:96px;min-block-size:42px;padding:4px 8px;
  border-radius:999px;font-size:13px;font-weight:700;line-height:1.15;
  background:var(--back-fill);color:var(--back-ink);
  box-shadow:0 2px 5px #263e3526;cursor:pointer;
 }
+.screen-back{position:absolute;z-index:10;top:calc(8px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right))}
+.writing-settings-button{flex:none}
+.writing-settings-panel .writing-erase{container-type:size;min-height:80px;display:grid;place-items:center;padding:4px}
+.writing-erase span{font-size:clamp(20px,min(55cqh,24cqw),42px);line-height:1.05;overflow-wrap:anywhere}
 .screen-back-original[hidden]{display:none!important}
 .overlay.listen-view .sheet{padding-top:calc(59px + env(safe-area-inset-top))}
 .overlay.game-view .sheet{padding-top:calc(55px + env(safe-area-inset-top))}
@@ -71,7 +76,7 @@ button:focus-visible{outline:2px solid #37765a;outline-offset:2px}
   <div class="card whowatch-card"><button class="card-main" data-mode="whowatch" type="button"><span class="icon" aria-hidden="true">♥</span><span class="card-copy"><span class="card-title">ふわっち</span><span class="card-desc">ふわっちを開く</span></span></button><button class="info" data-help="whowatch" type="button" aria-label="説明">?</button></div>
  </section>
  <p class="note"><strong>これは玩具です。</strong>診断・治療・診察を行うものではありません。</p>
- <footer class="footer"><small class="app-version">ver. 1.065</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
+ <footer class="footer"><small class="app-version">ver. 1.066</small><small class="presented-by">ブドウ糖先輩 Presents<br>Budoutou Senpai</small></footer>
 </main>
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><button class="screen-back" id="closeBtn" type="button">戻る</button><section class="sheet"><div id="sheetContent"></div></section></div>
 <script>
@@ -89,7 +94,9 @@ const localizedRows=[
 ["写真と動画をスワイプで切り替えます。2秒長押しで登録画面を開きます。", "Swipe through photos and videos. Hold for two seconds to open registration.", "滑动切换照片和视频。长按两秒打开添加页面。", "밀어서 사진과 동영상을 바꿉니다. 2초간 길게 누르면 등록 화면이 열립니다.", "Balayez pour parcourir les photos et vidéos. Maintenez deux secondes pour en ajouter.", "Wischen Sie durch Fotos und Videos. Halten Sie die Taste zwei Sekunden zum Hinzufügen.", "Vuốt để xem ảnh và video. Nhấn giữ hai giây để mở màn hình thêm.", "फ़ोटो और वीडियो बदलने के लिए स्वाइप करें। जोड़ने की स्क्रीन खोलने के लिए दो सेकंड दबाएँ।"],
 ["動くボールを観られます。「コース変更」で棒やワープドアを置けます。", "Watch the moving balls. Use Change course to add rods or warp doors.", "观看移动的小球。用“更改路线”添加杆或传送门。", "움직이는 공을 볼 수 있습니다. 코스 변경에서 막대나 워프 문을 놓을 수 있습니다.", "Regardez les balles bouger. Modifier le parcours permet de placer des barres et des portes.", "Beobachten Sie rollende Kugeln. Unter Bahn ändern können Sie Stäbe und Teleporttüren setzen.", "Xem bóng chuyển động. Dùng Đổi đường đi để đặt thanh hoặc cửa dịch chuyển.", "चलती गेंदें देखें। मार्ग बदलें से छड़ें और टेलीपोर्ट दरवाज़े लगाएँ।"],
 ["指で文字を書けます。「設定」で紙の色やお手本を変えられます。", "Write with your finger. Use Settings to change the paper color or sample text.", "用手指书写。可在设置中更改纸色和范字。", "손가락으로 씁니다. 설정에서 종이 색과 본보기를 바꿀 수 있습니다.", "Écrivez du doigt. Les réglages permettent de changer la couleur du papier et le modèle.", "Schreiben Sie mit dem Finger. In den Einstellungen ändern Sie Papierfarbe und Vorlage.", "Viết bằng ngón tay. Đổi màu giấy và chữ mẫu trong phần cài đặt.", "उँगली से लिखें। सेटिंग्स में कागज़ का रंग और नमूना बदलें।"],
-["一覧から番組を選び、「スタート」で再生します。", "Choose a video from the list and press Start.", "从列表选一个节目，再按“开始”。", "목록에서 동영상을 선택하고 시작을 누릅니다.", "Choisissez une vidéo dans la liste et appuyez sur Démarrer.", "Wählen Sie ein Video aus der Liste und drücken Sie Starten.", "Chọn video trong danh sách rồi nhấn Bắt đầu.", "सूची से वीडियो चुनें और शुरू करें दबाएँ।"],
+["各番組の「◀」で再生し、「■」で停止します。", "Press ◀ to play a video and ■ to stop it.", "按◀播放节目，按■停止。", "◀를 눌러 재생하고 ■를 눌러 정지합니다.", "Appuyez sur ◀ pour lire une vidéo et sur ■ pour l’arrêter.", "Drücken Sie ◀ zum Abspielen und ■ zum Stoppen.", "Nhấn ◀ để phát và ■ để dừng.", "चलाने के लिए ◀ और रोकने के लिए ■ दबाएँ।"],
+["パニックを克服した人意外といました。", "More people than I expected have overcome panic.", "克服恐慌的人比我想象的多。", "공황을 극복한 사람이 생각보다 많았어요.", "Plus de personnes que je ne le pensais ont surmonté la panique.", "Mehr Menschen als gedacht haben Panik überwunden.", "Có nhiều người vượt qua cơn hoảng loạn hơn tôi nghĩ.", "मेरी उम्मीद से ज़्यादा लोगों ने घबराहट पर काबू पाया।"],
+["番組を停止", "Stop video", "停止播放", "동영상 정지", "Arrêter la vidéo", "Video stoppen", "Dừng video", "वीडियो रोकें"],
 ["ふわっちを開きます。表紙へ戻るにはブラウザーの「戻る」を押します。", "Opens Fuwatch. Use your browser’s Back button to return to the cover.", "打开 Fuwatch。按浏览器的返回按钮回到首页。", "Fuwatch를 엽니다. 브라우저의 뒤로 버튼으로 처음 화면에 돌아갑니다.", "Ouvre Fuwatch. Utilisez le bouton Retour du navigateur pour revenir à l’accueil.", "Öffnet Fuwatch. Mit der Zurück-Taste des Browsers gelangen Sie zur Startseite.", "Mở Fuwatch. Dùng nút Quay lại của trình duyệt để về trang chính.", "Fuwatch खोलता है। मुखपृष्ठ पर लौटने के लिए ब्राउज़र का वापस बटन दबाएँ।"],
 ["アプリの使い方と注意事項を開きます。", "Opens instructions and important notes.", "打开使用说明和注意事项。", "사용 안내와 주의 사항을 엽니다.", "Ouvre le mode d’emploi et les précautions.", "Öffnet die Anleitung und wichtige Hinweise.", "Mở hướng dẫn và lưu ý.", "उपयोग निर्देश और ज़रूरी सूचनाएँ खोलता है।"],
 ["画面に表示する言語を選べます。", "Choose the display language.", "选择显示语言。", "표시 언어를 선택합니다.", "Choisissez la langue d’affichage.", "Wählen Sie die Anzeigesprache.", "Chọn ngôn ngữ hiển thị.", "स्क्रीन की भाषा चुनें।"],
@@ -955,7 +962,7 @@ function close(){
  requestAnimationFrame(()=>{if(!activeCorner)window.scrollTo({top:savedHomeScrollY,left:0,behavior:'auto'})});
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeCorner)close()});
-const explain={"listen": ["聴く", "YouTubeの音や端末に登録した曲を再生します。"], "see": ["観る", "写真と動画をスワイプで切り替えます。2秒長押しで登録画面を開きます。"], "feelBall": ["落ち着く動画", "動くボールを観られます。「コース変更」で棒やワープドアを置けます。"], "feelWriting": ["書道で落ち着く", "指で文字を書けます。「設定」で紙の色やお手本を変えられます。"], "youtube": ["えみりんさんのために", "一覧から番組を選び、「スタート」で再生します。"], "whowatch": ["ふわっち", "ふわっちを開きます。表紙へ戻るにはブラウザーの「戻る」を押します。"], "guide": ["読んでね", "アプリの使い方と注意事項を開きます。"], "language": ["言語", "画面に表示する言語を選べます。"], "stop": ["全停止（60分後自動）", "再生中の音楽・動画とボールを止めます。表紙のまま60分経つと自動でも止まります。"]};
+const explain={"listen": ["聴く", "YouTubeの音や端末に登録した曲を再生します。"], "see": ["観る", "写真と動画をスワイプで切り替えます。2秒長押しで登録画面を開きます。"], "feelBall": ["落ち着く動画", "動くボールを観られます。「コース変更」で棒やワープドアを置けます。"], "feelWriting": ["書道で落ち着く", "指で文字を書けます。「設定」で紙の色やお手本を変えられます。"], "youtube": ["えみりんさんのために", "各番組の「◀」で再生し、「■」で停止します。"], "whowatch": ["ふわっち", "ふわっちを開きます。表紙へ戻るにはブラウザーの「戻る」を押します。"], "guide": ["読んでね", "アプリの使い方と注意事項を開きます。"], "language": ["言語", "画面に表示する言語を選べます。"], "stop": ["全停止（60分後自動）", "再生中の音楽・動画とボールを止めます。表紙のまま60分経つと自動でも止まります。"]};
 function help(mode){const [t,d]=explain[mode];const findControl=show(`<h2 id="sheetTitle">${t}</h2><p>${d}</p><button class="stop" id="helpDone">閉じる</button>`);findControl('helpDone').onclick=close}
 document.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>openCorner('help',()=>help(b.dataset.help),true));coverControl('helpAll').onclick=()=>openCorner('help',openGuide,true);function openGuide(){const findControl=show(`<h2 id="sheetTitle">読んでね</h2><p class="help">この説明は、日本国内での使用を前提としています。</p>
 <h3>アプリの使い方</h3><p>聴く：YouTube動画を選んで再生します。動画名やURLは「YouTube動画を変更」から差し替えられます。「わたし好みの音楽」にはスマホ内の曲を1曲登録できます。<br>左右のスワイプで写真と動画を切り替えます。動画は「▶ 動画を再生」を押します。「観る」を2秒長押しすると登録できます。<br>表紙の「感じる　落ち着く動画」「感じる　書道で落ち着く」から直接開けます。</p>
@@ -1270,68 +1277,64 @@ const FEATURED_PROGRAMS=[
 ];
 const FEATURED_PROGRAM_LIMIT=10;
 function playFeaturedYouTube(){
- const findControl=show(`<h2 id="sheetTitle">パニック障害を乗り越えました</h2>
- <div class="featured-player" id="featuredPlayer"></div>
- <div class="actions featured-actions">
-  <button class="primary" id="featuredStart" type="button" disabled>スタート</button>
-  <button class="secondary" id="featuredStop" type="button" disabled>終了</button>
-  <button class="stop" id="featuredBack" type="button">戻る</button>
- </div>
+ const findControl=show(`<h2 id="sheetTitle">パニックを克服した人意外といました。</h2>
  <div class="featured-programs" id="featuredPrograms"></div>`);
  const panel=activeCorner.panel;
  panel.classList.add('listen-view');
- const player=findControl('featuredPlayer'),list=findControl('featuredPrograms');
- const start=findControl('featuredStart'),stop=findControl('featuredStop');
- const choices=[];
- let selected=null,playing=null;
+ const list=findControl('featuredPrograms');
+ let stopPlaying=null;
  for(const program of FEATURED_PROGRAMS.slice(0,FEATURED_PROGRAM_LIMIT)){
   const card=document.createElement('article');
   card.className='featured-program';
+  const title=document.createElement('h3');
+  title.textContent=program.title;
+  title.setAttribute('data-user-content','');
+  const controls=document.createElement('div');
+  controls.className='featured-controls';
+  const start=document.createElement('button');
+  start.type='button';
+  start.textContent='◀';
+  start.setAttribute('aria-label','再生');
+  const stop=document.createElement('button');
+  stop.type='button';
+  stop.textContent='■';
+  stop.setAttribute('aria-label','番組を停止');
+  stop.disabled=true;
+  controls.append(start,stop);
+  const frame=document.createElement('div');
+  frame.className='featured-frame';
   const image=document.createElement('img');
   image.src='https://i.ytimg.com/vi/'+program.id+'/hqdefault.jpg';
   image.loading='lazy';
   image.alt='';
   image.onerror=()=>image.remove();
-  const title=document.createElement('h3');
-  title.textContent=program.title;
-  title.setAttribute('data-user-content','');
-  const choose=document.createElement('button');
-  choose.className='secondary';
-  choose.type='button';
-  choose.textContent='番組を選ぶ';
-  choose.setAttribute('aria-pressed','false');
-  choose.onclick=()=>{
-   selected=program;
-   for(const [entry,button] of choices)button.setAttribute('aria-pressed',String(entry===selected));
-   start.disabled=selected===playing;
-   start.focus();
-   start.scrollIntoView({block:'nearest'});
-  };
-  choices.push([program,choose]);
-  card.append(image,title,choose);
+  frame.append(image);
+  card.append(title,controls,frame);
   list.appendChild(card);
+  stop.onclick=()=>{
+   if(stopPlaying!==stop.onclick)return;
+   frame.replaceChildren(image);
+   frame.classList.remove('is-playing');
+   stop.disabled=true;
+   stopPlaying=null;
+  };
+  start.onclick=()=>{
+   if(stopPlaying===stop.onclick)return;
+   if(stopPlaying)stopPlaying();
+   const video=document.createElement('iframe');
+   video.className='yt-player';
+   video.title=program.title;
+   video.allow='autoplay; encrypted-media; picture-in-picture';
+   video.allowFullscreen=true;
+   video.referrerPolicy='strict-origin-when-cross-origin';
+   video.src='https://www.youtube-nocookie.com/embed/'+program.id+'?autoplay=1&playsinline=1';
+   frame.replaceChildren(video);
+   frame.classList.add('is-playing');
+   stop.disabled=false;
+   stopPlaying=stop.onclick;
+  };
  }
- start.onclick=()=>{
-  if(!selected||selected===playing)return;
-  const video=document.createElement('iframe');
-  video.className='yt-player';
-  video.title=selected.title;
-  video.allow='autoplay; encrypted-media; picture-in-picture';
-  video.allowFullscreen=true;
-  video.referrerPolicy='strict-origin-when-cross-origin';
-  video.src='https://www.youtube-nocookie.com/embed/'+selected.id+'?autoplay=1&playsinline=1';
-  player.replaceChildren(video);
-  playing=selected;
-  start.disabled=true;
-  stop.disabled=false;
- };
- stop.onclick=()=>{
-  player.replaceChildren();
-  playing=null;
-  stop.disabled=true;
-  start.disabled=!selected;
- };
- findControl('featuredBack').onclick=close;
+ translateTree(list);
 }
 function bindMain(btn,mode){let timer=null,held=false;btn.addEventListener('pointerdown',()=>{held=false;if(mode==='see')timer=setTimeout(()=>{held=true;openCorner('see',registerPhotos,true)},2000)});['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>clearTimeout(timer)));btn.addEventListener('contextmenu',e=>e.preventDefault());btn.addEventListener('click',e=>{if(held){e.preventDefault();held=false;return}if(mode==='listen')openCorner('listen',openListen);if(mode==='see')openCorner('see',showGallery);if(mode==='feelBall')openCorner('feelBall',()=>startFeel('ball'));if(mode==='feelWriting')openCorner('feelWriting',()=>startFeel('writing'));if(mode==='youtube')openCorner('youtube',playFeaturedYouTube);if(mode==='whowatch')window.location.assign('https://whowatch.tv')})}
 document.querySelectorAll('.card-main').forEach(b=>bindMain(b,b.dataset.mode));
@@ -1354,7 +1357,7 @@ function startFeel(which='ball'){
  const corner=activeCorner,overlay=corner.panel;
  let buildingRaf=0,vibeTimer=null,sandSaveTimer=null,sandFlush=null;
  corner.cleanup=null;
- const findControl=show(`<div class="feel-root"><div class="feel-header"><h2 id="sheetTitle">落ち着く動画</h2><div class="game-header-actions"><button class="game-back" id="courseChange" type="button">コース変更</button><button class="game-back" id="writingSettingsBtn" type="button" hidden>設定</button><button class="game-back" id="gameBack" type="button">戻る</button></div></div><div id="ballPanel" role="tabpanel"><div class="saturation-stage" aria-label="大きさと速度の違う最大8個のボールが7階を巡る連続アニメーション"><canvas id="buildingCanvas"></canvas></div><div class="ball-controls" id="ballControls" hidden><div class="ball-count-row"><span class="ball-count-label">ボールの数</span><div class="ball-count-options" id="ballCountOptions" role="group" aria-label="表示するボールの数"><button type="button" data-count="1">1</button><button type="button" data-count="2">2</button><button type="button" data-count="3" class="active" aria-pressed="true">3</button><button type="button" data-count="4">4</button><button type="button" data-count="5">5</button><button type="button" data-count="6">6</button><button type="button" data-count="7">7</button><button type="button" data-count="8">8</button></div></div><div class="ball-edit-row"><button id="eraseFloorBtn" type="button" aria-pressed="false">床を消す</button><button id="restoreFloorBtn" type="button">元通り</button></div><div class="obstacle-tools"><div class="obstacle-add-row"><button type="button" data-add-obstacle="rod">＋棒</button><button type="button" data-add-obstacle="disk">＋円盤</button><button type="button" data-add-obstacle="tire">＋タイヤ</button><span id="obstacleSelected">置いた物は指で移動</span></div><div class="obstacle-edit-row"><button id="deleteObstacle" type="button">タップで選んだ物を1つ削除</button><button id="clearObstacles" type="button">全消去</button><button id="warpDoors" type="button" aria-pressed="false">ワープドア</button></div></div><div class="ball-size-controls" id="ballSizeControls" aria-label="ボールごとの大きさ"></div><button class="ball-reroll" id="randomizeBalls" type="button">サイズの組み合わせをランダムにする</button><div class="ball-help"><p>ボールの数は1〜8個から選べます。各ボールのボタンで大きさを変えられます。ボール同士はぶつかりません。</p><p>「＋棒」「＋円盤」「＋タイヤ」で物を置き、指でドラッグして動かします。棒の端をタップすると、その側が15度下がります。</p><p>消したい棒・円盤・タイヤの中央をタップして選び、「タップで選んだ物を1つ削除」を押します。「全消去」は棒・円盤・タイヤをまとめて消します。</p><p>「床を消す」を押して床をなぞると穴が開きます。同じボタンを押すと穴を開ける操作を終了し、「元通り」で床の穴を元に戻せます。</p><p>「ワープドア」を押すと赤いINと緑のOUTが1組出ます。指でドラッグして離すと、穴ともう一方のドアを避けて最寄りの床に固定されます。もう一度押すと2枚とも消えます。</p><p>INに入ったボールはOUTから同じ速さで出ます。下の階にIN、上の階にOUTを置き、ボールがINを通るようにするとコース内で循環します。</p></div></div><div class="vibe-note" id="vibeNote" style="margin:8px 18px">ボールが最下部から最上部へ戻ります</div></div><div id="writingPanel" class="writing-panel" role="tabpanel" hidden><div id="writingCanvasView" class="writing-canvas-view"><div class="sand-stage" id="sandStage"><canvas id="sandCanvas" aria-label="指で自由に文字や模様を書く"></canvas></div></div><section id="writingSettingsPanel" class="writing-settings-panel" aria-label="書道の設定" hidden><h3>書道の設定</h3><div class="writing-settings-grid"><div class="writing-setting-group"><h4>色替え</h4><div class="sand-tools writing-color-tools"><button id="sandColor" data-theme="sand" type="button">砂色</button><button id="inkColor" data-theme="ink" type="button">白地・黒墨</button></div></div><button id="clearSand" class="writing-action-button" type="button">消去</button><div class="writing-setting-group calligraphy-tools"><button id="samplePreview" class="sample-preview" type="button"><span>お手本表示：</span><strong id="samplePreviewText" data-user-content>大丈夫</strong><small>（押すと変更）</small></button></div><div class="writing-stamp-buttons"><button id="stampCalligraphy" class="writing-action-button stamp-action" type="button">お手本記入</button><button id="writingStart" class="writing-action-button stamp-action" type="button">書道初める</button></div></div></section></div></div>`);const isWriting=which==='writing';overlay.classList.add('game-view');findControl('ballPanel').hidden=isWriting;findControl('writingPanel').hidden=!isWriting;findControl('sheetTitle').textContent=isWriting?'書道で落ち着く':'落ち着く動画';const courseButton=findControl('courseChange'),ballControls=findControl('ballControls');courseButton.hidden=isWriting;let courseOpen=false;courseButton.onclick=()=>{courseOpen=!courseOpen;ballControls.hidden=!courseOpen;const ja=courseOpen?'変更終了':'コース変更';courseButton.textContent=ja;courseButton.setAttribute('aria-expanded',String(courseOpen));requestAnimationFrame(resize)};ballControls.hidden=true;findControl('gameBack').onclick=close;const canvas=findControl('sandCanvas'),stage=canvas.parentElement,ctx=canvas.getContext('2d'),buildingCanvas=findControl('buildingCanvas'),buildingStage=buildingCanvas.parentElement,bctx=buildingCanvas.getContext('2d'),sandStage=findControl('sandStage'),writingCanvasView=findControl('writingCanvasView'),writingSettingsPanel=findControl('writingSettingsPanel'),samplePreviewText=findControl('samplePreviewText');let sampleText='大丈夫',sampleChanged=false;let drawing=false,pointerId=null,lastPoint=null,theme='ink',themeLoaded=false;
+ const findControl=show(`<div class="feel-root"><div class="feel-header"><h2 id="sheetTitle">落ち着く動画</h2><div class="game-header-actions"><button class="game-back" id="courseChange" type="button">コース変更</button><button class="writing-settings-button" id="writingSettingsBtn" type="button" hidden>設定</button><button class="game-back" id="gameBack" type="button">戻る</button></div></div><div id="ballPanel" role="tabpanel"><div class="saturation-stage" aria-label="大きさと速度の違う最大8個のボールが7階を巡る連続アニメーション"><canvas id="buildingCanvas"></canvas></div><div class="ball-controls" id="ballControls" hidden><div class="ball-count-row"><span class="ball-count-label">ボールの数</span><div class="ball-count-options" id="ballCountOptions" role="group" aria-label="表示するボールの数"><button type="button" data-count="1">1</button><button type="button" data-count="2">2</button><button type="button" data-count="3" class="active" aria-pressed="true">3</button><button type="button" data-count="4">4</button><button type="button" data-count="5">5</button><button type="button" data-count="6">6</button><button type="button" data-count="7">7</button><button type="button" data-count="8">8</button></div></div><div class="ball-edit-row"><button id="eraseFloorBtn" type="button" aria-pressed="false">床を消す</button><button id="restoreFloorBtn" type="button">元通り</button></div><div class="obstacle-tools"><div class="obstacle-add-row"><button type="button" data-add-obstacle="rod">＋棒</button><button type="button" data-add-obstacle="disk">＋円盤</button><button type="button" data-add-obstacle="tire">＋タイヤ</button><span id="obstacleSelected">置いた物は指で移動</span></div><div class="obstacle-edit-row"><button id="deleteObstacle" type="button">タップで選んだ物を1つ削除</button><button id="clearObstacles" type="button">全消去</button><button id="warpDoors" type="button" aria-pressed="false">ワープドア</button></div></div><div class="ball-size-controls" id="ballSizeControls" aria-label="ボールごとの大きさ"></div><button class="ball-reroll" id="randomizeBalls" type="button">サイズの組み合わせをランダムにする</button><div class="ball-help"><p>ボールの数は1〜8個から選べます。各ボールのボタンで大きさを変えられます。ボール同士はぶつかりません。</p><p>「＋棒」「＋円盤」「＋タイヤ」で物を置き、指でドラッグして動かします。棒の端をタップすると、その側が15度下がります。</p><p>消したい棒・円盤・タイヤの中央をタップして選び、「タップで選んだ物を1つ削除」を押します。「全消去」は棒・円盤・タイヤをまとめて消します。</p><p>「床を消す」を押して床をなぞると穴が開きます。同じボタンを押すと穴を開ける操作を終了し、「元通り」で床の穴を元に戻せます。</p><p>「ワープドア」を押すと赤いINと緑のOUTが1組出ます。指でドラッグして離すと、穴ともう一方のドアを避けて最寄りの床に固定されます。もう一度押すと2枚とも消えます。</p><p>INに入ったボールはOUTから同じ速さで出ます。下の階にIN、上の階にOUTを置き、ボールがINを通るようにするとコース内で循環します。</p></div></div><div class="vibe-note" id="vibeNote" style="margin:8px 18px">ボールが最下部から最上部へ戻ります</div></div><div id="writingPanel" class="writing-panel" role="tabpanel" hidden><div id="writingCanvasView" class="writing-canvas-view"><div class="sand-stage" id="sandStage"><canvas id="sandCanvas" aria-label="指で自由に文字や模様を書く"></canvas></div></div><section id="writingSettingsPanel" class="writing-settings-panel" aria-label="書道の設定" hidden><h3>書道の設定</h3><div class="writing-settings-grid"><div class="writing-setting-group"><h4>色替え</h4><div class="sand-tools writing-color-tools"><button id="sandColor" data-theme="sand" type="button">砂色</button><button id="inkColor" data-theme="ink" type="button">白地・黒墨</button></div></div><button id="clearSand" class="writing-action-button writing-erase" type="button"><span>消去</span></button><div class="writing-setting-group calligraphy-tools"><button id="samplePreview" class="sample-preview" type="button"><span>お手本表示：</span><strong id="samplePreviewText" data-user-content>大丈夫</strong><small>（押すと変更）</small></button></div><div class="writing-stamp-buttons"><button id="stampCalligraphy" class="writing-action-button stamp-action" type="button">お手本記入</button><button id="writingStart" class="writing-action-button stamp-action" type="button">書道初める</button></div></div></section></div></div>`);const isWriting=which==='writing';overlay.classList.add('game-view');findControl('ballPanel').hidden=isWriting;findControl('writingPanel').hidden=!isWriting;findControl('sheetTitle').textContent=isWriting?'書道で落ち着く':'落ち着く動画';const courseButton=findControl('courseChange'),ballControls=findControl('ballControls');courseButton.hidden=isWriting;let courseOpen=false;courseButton.onclick=()=>{courseOpen=!courseOpen;ballControls.hidden=!courseOpen;const ja=courseOpen?'変更終了':'コース変更';courseButton.textContent=ja;courseButton.setAttribute('aria-expanded',String(courseOpen));requestAnimationFrame(resize)};ballControls.hidden=true;findControl('gameBack').onclick=close;const canvas=findControl('sandCanvas'),stage=canvas.parentElement,ctx=canvas.getContext('2d'),buildingCanvas=findControl('buildingCanvas'),buildingStage=buildingCanvas.parentElement,bctx=buildingCanvas.getContext('2d'),sandStage=findControl('sandStage'),writingCanvasView=findControl('writingCanvasView'),writingSettingsPanel=findControl('writingSettingsPanel'),samplePreviewText=findControl('samplePreviewText');let sampleText='大丈夫',sampleChanged=false;let drawing=false,pointerId=null,lastPoint=null,theme='ink',themeLoaded=false;
  // Canvas sizing.
  function resize(){const old=document.createElement('canvas');old.width=canvas.width;old.height=canvas.height;if(old.width)old.getContext('2d').drawImage(canvas,0,0);const dpr=Math.min(2,window.devicePixelRatio||1),w=stage.clientWidth,h=stage.clientHeight,bw=buildingStage.clientWidth,bh=buildingStage.clientHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(old.width)ctx.drawImage(old,0,0,old.width,old.height,0,0,w,h);buildingCanvas.width=Math.round(bw*dpr);buildingCanvas.height=Math.round(bh*dpr);bctx.setTransform(dpr,0,0,dpr,0,0)}resize();window.addEventListener('resize',resize,{passive:true});
  corner.cleanup=()=>{
